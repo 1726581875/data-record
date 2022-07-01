@@ -71,8 +71,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
     /**
      * 记录下一位置的binlog
      * 获取binlog下一位置，参考以下方法
-     * @see com.github.shyiko.mysql.binlog.BinaryLogClient 类
-     * 方法 updateClientBinlogFilenameAndPosition
+     * @see com.github.shyiko.mysql.binlog.BinaryLogClient#updateClientBinlogFilenameAndPosition
      *
      *
      * @param event

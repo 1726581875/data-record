@@ -1,6 +1,5 @@
 package yanyu.xmz.recorder;
 
-import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.EventData;
 import yanyu.xmz.recorder.dao.BaseDAO;
 import yanyu.xmz.recorder.dao.util.PropertiesReaderUtil;
@@ -10,6 +9,7 @@ import yanyu.xmz.recorder.entity.InsertRowRecord;
 import yanyu.xmz.recorder.entity.UpdateRowRecord;
 import yanyu.xmz.recorder.handler.*;
 import yanyu.xmz.recorder.handler.factory.HandlerFactory;
+import yanyu.xmz.recorder.test.MyBinaryLogClient;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -42,7 +42,7 @@ public class BinLogListener {
         // 初始化表
         initTable();
 
-        BinaryLogClient client = new BinaryLogClient(hostname, port,username, password);
+        MyBinaryLogClient client = new MyBinaryLogClient(hostname, port,username, password);
 
         // 查询最新一条记录的binlog位置
         EventRecord lastRecord = BaseDAO.mysqlInstance()

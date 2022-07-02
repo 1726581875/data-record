@@ -1,6 +1,6 @@
-package yanyu.xmz.recorder.mysql.protocol;
+package yanyu.xmz.recorder.mysql.protocol.packet;
 
-import com.github.shyiko.mysql.binlog.io.ByteArrayInputStream;
+import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 
 import java.io.IOException;
 
@@ -29,25 +29,15 @@ public class ErrPacket extends Packet {
     private String errorMessage;
 
     public ErrPacket(byte[] bytes, CapabilityFlags capabilityFlags) throws IOException {
-        ByteArrayInputStream buffer = new ByteArrayInputStream(bytes);
-        this.header = (byte) buffer.readInteger(1);
-        this.errorCode = buffer.readInteger(2);
+        super(bytes);
+        this.header = (byte) reader.readInteger(1);
+        this.errorCode = reader.readInteger(2);
         if (capabilityFlags.isSupportsProtocol41()) {
             // marker of the SQL State
-            buffer.skip(1);
-            this.sqlState = buffer.readString(5);
+            reader.skip(1);
+            this.sqlState = reader.readString(5);
         }
-        this.errorMessage = buffer.readString(buffer.available());
-    }
-
-    @Override
-    public String toString() {
-        return "ErrPacket{" +
-                "header=" + header +
-                ", errorCode=" + errorCode +
-                ", sqlState='" + sqlState + '\'' +
-                ", errorMessage='" + errorMessage + '\'' +
-                '}';
+        this.errorMessage = reader.readString(reader.available());
     }
 
     public byte getHeader() {
@@ -64,5 +54,17 @@ public class ErrPacket extends Packet {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "ErrPacket{" +
+                "header=" + header +
+                ", errorCode=" + errorCode +
+                ", sqlState='" + sqlState + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", length=" + length +
+                ", sequenceId=" + sequenceId +
+                '}';
     }
 }

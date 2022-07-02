@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.mysql.protocol;
+package yanyu.xmz.recorder.mysql.channel;
 
 import com.github.shyiko.mysql.binlog.io.ByteArrayInputStream;
 import com.github.shyiko.mysql.binlog.network.AuthenticationException;
@@ -9,6 +9,7 @@ import com.github.shyiko.mysql.binlog.network.protocol.PacketChannel;
 import com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateCommand;
 import com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateNativePasswordCommand;
 import com.github.shyiko.mysql.binlog.network.protocol.command.Command;
+import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,9 +21,9 @@ import java.util.Arrays;
  * @date 2022/7/2
  * 封装连接通道
  */
-public class ConnectionChannel {
+public class ChannelManager {
 
-    private PacketChannel packetChannel;
+    private MyPacketChannel packetChannel;
 
     private String hostname;
 
@@ -41,12 +42,12 @@ public class ConnectionChannel {
      */
     private CapabilityFlags capabilityFlags;
 
-    public ConnectionChannel(String hostname, Integer port, String username, String password) {
+    public ChannelManager(String hostname, Integer port, String username, String password) {
         this(hostname, port, username, password, null);
     }
 
 
-    public ConnectionChannel(String hostname, Integer port, String username, String password, String database) {
+    public ChannelManager(String hostname, Integer port, String username, String password, String database) {
         this.hostname = hostname;
         this.port = port;
         this.username = username;
@@ -55,7 +56,7 @@ public class ConnectionChannel {
     }
 
 
-    public PacketChannel getChanel() throws IOException {
+    public MyPacketChannel getChanel() throws IOException {
 
         if(packetChannel == null) {
             packetChannel = openConnectChanel();
@@ -77,9 +78,9 @@ public class ConnectionChannel {
      * @return
      * @throws IOException
      */
-    private PacketChannel openConnectChanel() throws IOException {
+    private MyPacketChannel openConnectChanel() throws IOException {
         // 1、和mysql建立连接，会首先收到服务器发来的初始化握手包
-        PacketChannel localChannel = openChannel(connectTimeout == null ? 1000 * 60 : connectTimeout,  hostname, port);
+        MyPacketChannel localChannel = openChannel(connectTimeout == null ? 1000 * 60 : connectTimeout,  hostname, port);
         GreetingPacket greetingPacket = receiveGreeting(localChannel);
         // 2、握手响应，携带并授权信息，接收到服务发送回来的ok包就表示验证成功
         // Protocol::HandshakeResponse41握手响应包具体内容见 https://dev.mysql.com/doc/internals/en/connection-phase-packets.html
@@ -91,10 +92,10 @@ public class ConnectionChannel {
     }
 
 
-    private PacketChannel openChannel(final long connectTimeout, final String hostname, final int port) throws IOException {
+    private MyPacketChannel openChannel(final long connectTimeout, final String hostname, final int port) throws IOException {
         Socket socket = new Socket();
         socket.connect(new InetSocketAddress(hostname, port), (int) connectTimeout);
-        return new PacketChannel(socket);
+        return new MyPacketChannel(socket);
     }
 
     private GreetingPacket receiveGreeting(final PacketChannel channel) throws IOException {

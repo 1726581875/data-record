@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.business;
+package yanyu.xmz.recorder;
 
 import com.github.shyiko.mysql.binlog.event.EventData;
 import yanyu.xmz.recorder.business.handler.DbEventHandler;

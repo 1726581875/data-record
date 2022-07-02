@@ -2,7 +2,6 @@ package yanyu.xmz.recorder.business.handler.factory;
 
 import com.github.shyiko.mysql.binlog.event.*;
 import yanyu.xmz.recorder.business.handler.*;
-import yanyu.xmz.recorder.handler.*;
 
 import java.util.HashMap;
 import java.util.Map;

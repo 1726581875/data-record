@@ -1,5 +1,6 @@
-package yanyu.xmz.recorder.mysql.protocol;
+package yanyu.xmz.recorder.mysql.protocol.packet;
 
+import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 import yanyu.xmz.recorder.mysql.protocol.io.ByteArrayInputStreamReader;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ import java.io.IOException;
  * @date 2022/6/30
  * https://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
  */
-public class OkPacket {
+public class OkPacket extends Packet {
 
     private byte header;
     /**
@@ -43,7 +44,7 @@ public class OkPacket {
 
 
     public OkPacket(byte[] bytes, CapabilityFlags capabilityFlags) throws IOException {
-        ByteArrayInputStreamReader reader = new ByteArrayInputStreamReader(bytes);
+        super(bytes);
         this.header = reader.read(1)[0];
         this.affectedRows = reader.readNextLenEncInt();
         this.lastInsertId = reader.readNextLenEncInt();
@@ -108,6 +109,8 @@ public class OkPacket {
                 ", warnings=" + warnings +
                 ", info='" + info + '\'' +
                 ", sessionStateChanges='" + sessionStateChanges + '\'' +
+                ", length=" + length +
+                ", sequenceId=" + sequenceId +
                 '}';
     }
 }

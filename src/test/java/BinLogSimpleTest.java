@@ -7,7 +7,6 @@ import yanyu.xmz.recorder.business.entity.DeleteRowRecord;
 import yanyu.xmz.recorder.business.entity.EventRecord;
 import yanyu.xmz.recorder.business.entity.InsertRowRecord;
 import yanyu.xmz.recorder.business.entity.UpdateRowRecord;
-import yanyu.xmz.recorder.handler.*;
 
 import java.io.IOException;
 import java.util.Objects;

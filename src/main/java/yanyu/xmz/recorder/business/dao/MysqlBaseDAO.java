@@ -9,7 +9,6 @@ import yanyu.xmz.recorder.business.dao.annotation.TableField;
 import yanyu.xmz.recorder.business.dao.obj.FieldDetail;
 import yanyu.xmz.recorder.business.dao.util.ConnectionManagerUtil;
 import yanyu.xmz.recorder.business.dao.util.NameConvertUtil;
-import yanyu.xmz.recorder.business.entity.EventRecord;
 
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -39,7 +38,7 @@ public class MysqlBaseDAO implements BaseDAO {
 
     private static final Logger log = LoggerFactory.getLogger(MysqlBaseDAO.class);
 
-    public MysqlBaseDAO(){
+    public MysqlBaseDAO() {
 
     }
 
@@ -60,10 +59,9 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-
     private <T> T analyzeResult(ResultSet resultSet, Class<T> type) throws Exception {
         if (isMappingSupportType(type)) {
-            return (T)resultSet.getObject(1);
+            return (T) resultSet.getObject(1);
         } else {
             T resultInstance = type.getConstructor().newInstance();
             Field[] declaredFields = type.getDeclaredFields();
@@ -91,7 +89,7 @@ public class MysqlBaseDAO implements BaseDAO {
     private Object convertValue(Field field, Object value) {
         // h2数据库tinyint查询结果对应java的byte类型，想使用Integer接收在此处做转换
         if (value instanceof Byte) {
-            if(field.getType().equals(Integer.class) || field.getType().equals(Integer.TYPE)) {
+            if (field.getType().equals(Integer.class) || field.getType().equals(Integer.TYPE)) {
                 value = ((Byte) value).intValue();
             }
         }
@@ -130,15 +128,15 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     @Override
-    public  <T> Long insertReturnKey(T obj) {
+    public <T> Long insertReturnKey(T obj) {
         if (obj == null) {
             throw new RuntimeException("插入元素为空, 请检查参数");
         }
         String insertSql = getInsertPrepareSQL(obj);
         //log.debug(insertSql);
         try (Connection conn = ConnectionManagerUtil.getConnection();
-             PreparedStatement statement = conn.prepareStatement(insertSql,Statement.RETURN_GENERATED_KEYS)) {
-             execUpdate(statement, obj);
+             PreparedStatement statement = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+            execUpdate(statement, obj);
             // 检索由于执行此 Statement 对象而创建的所有自动生成的键
             ResultSet rs = statement.getGeneratedKeys();
             if (rs.next()) {
@@ -165,7 +163,7 @@ public class MysqlBaseDAO implements BaseDAO {
         //log.debug(updatePrepareSQL);
         try (Connection conn = ConnectionManagerUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(updatePrepareSQL)) {
-             return execUpdate(statement, obj);
+            return execUpdate(statement, obj);
         } catch (Exception e) {
             log.error("插入失败", e);
             throw new RuntimeException("数据库插入失败:" + e.getMessage());
@@ -174,15 +172,8 @@ public class MysqlBaseDAO implements BaseDAO {
         }
     }
 
-    public static void main(String[] args) {
-        EventRecord dataRecord = new EventRecord();
-        dataRecord.setId(1L);
-        dataRecord.setTableId("520osy");
-        BaseDAO.mysqlInstance().updateById(dataRecord);
-    }
 
-
-    private String getUpdatePrepareSQL(Object object){
+    private String getUpdatePrepareSQL(Object object) {
 
         Class<?> objectClass = object.getClass();
         Field[] fields = objectClass.getDeclaredFields();
@@ -194,29 +185,29 @@ public class MysqlBaseDAO implements BaseDAO {
             try {
                 // todo 后续改为通过getXXX方法获取列的值
                 fields[i].setAccessible(true);
-                if(fields[i].get(object) == null){
+                if (fields[i].get(object) == null) {
                     continue;
                 }
             } catch (IllegalAccessException e) {
                 continue;
             }
-            if(fields[i].getAnnotation(Id.class) == null){
+            if (fields[i].getAnnotation(Id.class) == null) {
                 String column = NameConvertUtil.toDbRule(fields[i].getName());
                 columnList.add(NameConvertUtil.around(column, "`") + "= ?");
-                recordFieldDetail(new FieldDetail(fields[i].getName(), paramIndex++, 0,  fields[i].getClass()));
+                recordFieldDetail(new FieldDetail(fields[i].getName(), paramIndex++, 0, fields[i].getClass()));
             } else {
                 idField = fields[i];
             }
 
         }
 
-        if(idField == null) {
+        if (idField == null) {
             log.error("缺少id字段");
             throw new IllegalStateException("缺少id字段");
         }
 
         String id = NameConvertUtil.toDbRule(idField.getName());
-        recordFieldDetail(new FieldDetail(idField.getName(), paramIndex, 0,  idField.getClass()));
+        recordFieldDetail(new FieldDetail(idField.getName(), paramIndex, 0, idField.getClass()));
 
         String tableNameStr = NameConvertUtil.toDbRule(objectClass.getSimpleName());
 
@@ -285,7 +276,7 @@ public class MysqlBaseDAO implements BaseDAO {
             if (conn != null && !conn.isClosed()) {
                 conn.rollback();
             }
-            log.error("批量插入发生异常，当前执行列表报错下标:{}",successRow + 1 , e);
+            log.error("批量插入发生异常，当前执行列表报错下标:{}", successRow + 1, e);
             throw new RuntimeException(e);
         } finally {
             fieldDetailMapThreadLocal.remove();
@@ -299,8 +290,6 @@ public class MysqlBaseDAO implements BaseDAO {
         }
         return successRow;
     }
-
-
 
 
     @Override
@@ -332,7 +321,7 @@ public class MysqlBaseDAO implements BaseDAO {
             Long resultNum = getOne(querySql, Long.class);
             log.debug("结果==> {}", resultNum);
             // 如果表不存在，则创建表
-            if(resultNum == 0L) {
+            if (resultNum == 0L) {
                 createTable(entity);
             } else {
                 log.info("表{}已存在,无需执行建表语句", tableName);
@@ -381,11 +370,11 @@ public class MysqlBaseDAO implements BaseDAO {
             }
 
             // 如果是主键，设置自增
-            if(Objects.nonNull(field.getAnnotation(Id.class))){
+            if (Objects.nonNull(field.getAnnotation(Id.class))) {
                 idFieldName = databaseFieldName;
                 fieldType = fieldType + " NOT NULL AUTO_INCREMENT";
             }
-            if(Objects.nonNull(field.getAnnotation(DateAuto.class))){
+            if (Objects.nonNull(field.getAnnotation(DateAuto.class))) {
                 DateAuto annotation = field.getAnnotation(DateAuto.class);
                 fieldType = fieldType + ("update".equals(annotation.value()) ?
                         " NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
@@ -400,12 +389,13 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     /**
-     *  获取获取表名
+     * 获取获取表名
+     *
      * @param entity
      * @return
      */
     private String getTableName(Class<?> entity) {
-       return NameConvertUtil.toDbRule(entity.getSimpleName());
+        return NameConvertUtil.toDbRule(entity.getSimpleName());
     }
 
     private String getDatabaseType(Class<?> type) {
@@ -422,8 +412,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-
-    private String getInsertPrepareSQL(Object object){
+    private String getInsertPrepareSQL(Object object) {
 
         Class<?> objectClass = object.getClass();
         Field[] fields = objectClass.getDeclaredFields();
@@ -434,7 +423,7 @@ public class MysqlBaseDAO implements BaseDAO {
             try {
                 // todo 后续改为通过getXXX方法获取列的值
                 fields[i].setAccessible(true);
-                if(fields[i].get(object) == null){
+                if (fields[i].get(object) == null) {
                     continue;
                 }
             } catch (IllegalAccessException e) {
@@ -444,7 +433,7 @@ public class MysqlBaseDAO implements BaseDAO {
             columnList.add(NameConvertUtil.around(column, "`"));
 
             // 记录列参数信息到ThreadLocal
-            recordFieldDetail(new FieldDetail(fields[i].getName(), paramIndex++, 0,  fields[i].getClass()));
+            recordFieldDetail(new FieldDetail(fields[i].getName(), paramIndex++, 0, fields[i].getClass()));
         }
 
         String tableNameStr = NameConvertUtil.toDbRule(objectClass.getSimpleName());
@@ -452,12 +441,12 @@ public class MysqlBaseDAO implements BaseDAO {
         String columnStr = columnList.stream().collect(Collectors.joining(","));
 
         // 拼接预编译sql片段
-       return String.format(INSERT_TEMPLATE, tableNameStr, columnStr, getPlaceholder(paramIndex -1));
+        return String.format(INSERT_TEMPLATE, tableNameStr, columnStr, getPlaceholder(paramIndex - 1));
     }
 
     private void recordFieldDetail(FieldDetail fieldDetail) {
         Map<String, FieldDetail> fieldDetailMap = fieldDetailMapThreadLocal.get();
-        if(fieldDetailMap == null) {
+        if (fieldDetailMap == null) {
             fieldDetailMap = new HashMap<>();
             fieldDetailMapThreadLocal.set(fieldDetailMap);
         }
@@ -465,10 +454,10 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-
     /**
      * 获取占位符片段
      * 例如 ==> "?,?,?,?"
+     *
      * @param num
      * @return
      */
@@ -482,8 +471,6 @@ public class MysqlBaseDAO implements BaseDAO {
         }
         return str.toString();
     }
-
-
 
 
     private Set<String> getTableColumnNameSet(ResultSet resultSet) throws SQLException {

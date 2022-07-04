@@ -37,14 +37,14 @@ public class ResultParser {
        if(header == NativeConstants.TYPE_ID_ERROR) {
            ErrPacket errPacket = new ErrPacket(resultBytes, capabilityFlags);
            result.setPacket(errPacket);
-           result.setCode("ERR");
+           result.setType("ERR");
            return result;
        }
        // EOF Packet
        if(packetLen < 9 && header == NativeConstants.TYPE_ID_EOF) {
            EofPacket eofPacket = new EofPacket(resultBytes, capabilityFlags);
            result.setPacket(eofPacket);
-           result.setCode("EOF");
+           result.setType("EOF");
            return result;
        }
 
@@ -57,7 +57,7 @@ public class ResultParser {
        if(header == NativeConstants.TYPE_ID_OK) {
            OkPacket okPacket = new OkPacket(resultBytes, capabilityFlags);
            result.setPacket(okPacket);
-           result.setCode("OK");
+           result.setType("OK");
            return result;
        }
 

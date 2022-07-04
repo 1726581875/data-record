@@ -1,6 +1,5 @@
 package yanyu.xmz.recorder.mysql.common;
 
-import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 import yanyu.xmz.recorder.mysql.protocol.packet.Packet;
 
 /**
@@ -9,16 +8,16 @@ import yanyu.xmz.recorder.mysql.protocol.packet.Packet;
  */
 public class ResultPacket {
 
-    private String code;
+    private String type;
 
     private Packet packet;
 
-    public String getCode() {
-        return code;
+    public String getType() {
+        return type;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Packet getPacket() {
@@ -32,7 +31,7 @@ public class ResultPacket {
     @Override
     public String toString() {
         return "ResultPacket{" +
-                "code='" + code + '\'' +
+                "code='" + type + '\'' +
                 ", packet=" + packet +
                 '}';
     }

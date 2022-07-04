@@ -1,14 +1,12 @@
 package yanyu.xmz.recorder;
 
-import com.github.shyiko.mysql.binlog.network.protocol.PacketChannel;
 import com.github.shyiko.mysql.binlog.network.protocol.command.*;
 import yanyu.xmz.recorder.mysql.channel.MyPacketChannel;
+import yanyu.xmz.recorder.mysql.common.ResultParser;
+import yanyu.xmz.recorder.mysql.common.ResultPacket;
 import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 import yanyu.xmz.recorder.mysql.channel.ChannelManager;
-import yanyu.xmz.recorder.mysql.protocol.packet.ErrPacket;
-import yanyu.xmz.recorder.mysql.protocol.packet.OkPacket;
 import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
-import yanyu.xmz.recorder.mysql.protocol.command.CreateDbCommand;
 
 import java.io.IOException;
 
@@ -40,30 +38,34 @@ public class CommandTest {
         ChannelManager connectionChannel = new ChannelManager(hostname, port, username, password);
 
         try {
-            MyPacketChannel localChannel = connectionChannel.getChanel();
-            // 初始化功能标记
-            CapabilityFlags capabilityFlags = connectionChannel.getCapabilityFlags();
-            String capability = capabilityFlags.toString();
-            System.out.println(capability);
+            // 执行Ping命令
+            sendCommand(connectionChannel, new PingCommand());
 
-            // 执行命令1
+            // 执行创建数据库命令
+            sendCommand(connectionChannel, new QueryCommand("create database xmz"));
 
-            // 执行命令2
-            localChannel.write(new QueryCommand("create database xmz"));
-            byte[] resultBytes = localChannel.readAll();
-            if(resultBytes[4] == (byte)0xFF) {
-                ErrPacket errPacket = new ErrPacket(resultBytes, capabilityFlags);
-                System.out.println(errPacket);
-            }else {
-                OkPacket okPacket = new OkPacket(resultBytes, capabilityFlags);
-                System.out.println(okPacket);
-            }
+            // 执行删除数据库命令
+            sendCommand(connectionChannel, new QueryCommand("drop database xmz"));
+
         }catch (Exception e){
             e.printStackTrace();
         } finally {
             connectionChannel.close();
         }
     }
+
+    private static void sendCommand(ChannelManager connectionChannel, Command command) throws IOException {
+        MyPacketChannel localChannel = connectionChannel.getChanel();
+        // 获取能力标记
+        CapabilityFlags capabilityFlags = connectionChannel.getCapabilityFlags();
+        // 执行查询命令
+        localChannel.write(command);
+        byte[] resultBytes = localChannel.readAll();
+        // 解析结果
+        ResultPacket resultPacket = ResultParser.parseResultPacket(resultBytes, capabilityFlags);
+        System.out.println(resultPacket);
+    }
+
 
 
 

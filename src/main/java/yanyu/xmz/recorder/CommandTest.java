@@ -47,18 +47,9 @@ public class CommandTest {
             System.out.println(capability);
 
             // 执行命令1
-            localChannel.write(new CreateDbCommand("ddd"));
-            byte[] read = localChannel.readAll();
-/*            if(read[4] == (byte)0xFF) {
-                ErrPacket errPacket = new ErrPacket(read,capabilityFlags);
-                System.out.println(errPacket);
-            } else {
-                OkPacket okPacket = new OkPacket(read, capabilityFlags);
-                System.out.println(okPacket);
-            }*/
 
             // 执行命令2
-            localChannel.write(new PingCommand());
+            localChannel.write(new QueryCommand("create database xmz"));
             byte[] resultBytes = localChannel.readAll();
             if(resultBytes[4] == (byte)0xFF) {
                 ErrPacket errPacket = new ErrPacket(resultBytes, capabilityFlags);

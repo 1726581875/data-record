@@ -9,6 +9,8 @@ import java.io.IOException;
 /**
  * @author xiaomingzhang
  * @date 2022/6/29
+ * COM_CREATE_DB命令已经被弃用,详情见
+ * @see com.mysql.cj.protocol.a.NativeConstants#COM_CREATE_DB
  */
 public class CreateDbCommand implements Command {
 

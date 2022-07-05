@@ -2,7 +2,7 @@ package yanyu.xmz.recorder.mysql.channel;
 
 import com.github.shyiko.mysql.binlog.io.ByteArrayInputStream;
 import com.github.shyiko.mysql.binlog.network.protocol.PacketChannel;
-import yanyu.xmz.recorder.mysql.common.ByteConvertUtil;
+import yanyu.xmz.recorder.mysql.common.util.ByteConvertUtil;
 
 import java.io.IOException;
 import java.net.Socket;

@@ -2,6 +2,7 @@ package yanyu.xmz.recorder.mysql.channel;
 
 import com.github.shyiko.mysql.binlog.io.ByteArrayInputStream;
 import com.github.shyiko.mysql.binlog.network.AuthenticationException;
+import com.github.shyiko.mysql.binlog.network.ClientCapabilities;
 import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.github.shyiko.mysql.binlog.network.protocol.ErrorPacket;
 import com.github.shyiko.mysql.binlog.network.protocol.GreetingPacket;
@@ -9,6 +10,7 @@ import com.github.shyiko.mysql.binlog.network.protocol.PacketChannel;
 import com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateCommand;
 import com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateNativePasswordCommand;
 import com.github.shyiko.mysql.binlog.network.protocol.command.Command;
+import com.mysql.cj.protocol.a.NativeServerSession;
 import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 
 import java.io.IOException;
@@ -38,9 +40,13 @@ public class ChannelManager {
     private Long connectTimeout;
 
     /**
-     * 客户端/服务端 使用的能力
+     * 客户端/服务端通讯 使用的能力
      */
     private CapabilityFlags capabilityFlags;
+    /**
+     * 服务端支持能力
+     */
+    private CapabilityFlags serverSupportsCapabilityFlags;
 
     public ChannelManager(String hostname, Integer port, String username, String password) {
         this(hostname, port, username, password, null);
@@ -80,14 +86,16 @@ public class ChannelManager {
      */
     private MyPacketChannel openConnectChanel() throws IOException {
         // 1、和mysql建立连接，会首先收到服务器发来的初始化握手包
-        MyPacketChannel localChannel = openChannel(connectTimeout == null ? 1000 * 60 : connectTimeout,  hostname, port);
+        MyPacketChannel localChannel = openChannel(this.connectTimeout == null ? 1000 * 60 : this.connectTimeout,  this.hostname, this.port);
         GreetingPacket greetingPacket = receiveGreeting(localChannel);
         // 2、握手响应，携带并授权信息，接收到服务发送回来的ok包就表示验证成功
         // Protocol::HandshakeResponse41握手响应包具体内容见 https://dev.mysql.com/doc/internals/en/connection-phase-packets.html
-        authenticate(localChannel, greetingPacket);
+        // todo 指定通信使用的能力, 暂时写死，后续通过传参数动态设置
+        int clientCapabilities = ClientCapabilities.LONG_FLAG | ClientCapabilities.PROTOCOL_41 | ClientCapabilities.SECURE_CONNECTION;
+        authenticate(localChannel, greetingPacket, clientCapabilities);
 
-        // todo 需要确认
-        capabilityFlags = new CapabilityFlags(greetingPacket.getServerCapabilities());
+        this.serverSupportsCapabilityFlags = new CapabilityFlags(greetingPacket.getServerCapabilities());
+        this.capabilityFlags = new CapabilityFlags(clientCapabilities);
         return localChannel;
     }
 
@@ -110,15 +118,16 @@ public class ChannelManager {
     }
 
 
-    private void authenticate(final PacketChannel channel, GreetingPacket greetingPacket) throws IOException {
+    private void authenticate(final PacketChannel channel, GreetingPacket greetingPacket, int clientCapabilities) throws IOException {
         int collation = greetingPacket.getServerCollation();
         int packetNumber = 1;
 
         boolean usingSSLSocket = false;
 
-        AuthenticateCommand authenticateCommand = new AuthenticateCommand(database, username, password,
-                greetingPacket.getScramble());
+        AuthenticateCommand authenticateCommand = new AuthenticateCommand(database, username, password, greetingPacket.getScramble());
         authenticateCommand.setCollation(collation);
+        authenticateCommand.setClientCapabilities(clientCapabilities);
+
         channel.write(authenticateCommand, packetNumber);
         byte[] authenticationResult = channel.read();
         if (authenticationResult[0] != (byte) 0x00 /* ok */) {
@@ -168,6 +177,10 @@ public class ChannelManager {
 
     public CapabilityFlags getCapabilityFlags(){
         return capabilityFlags;
+    }
+
+    public CapabilityFlags getServerSupportsCapabilityFlags() {
+        return serverSupportsCapabilityFlags;
     }
 
     public void setConnectTimeout(Long connectTimeout){

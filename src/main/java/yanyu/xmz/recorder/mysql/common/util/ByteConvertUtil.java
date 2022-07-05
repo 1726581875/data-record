@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.mysql.common;
+package yanyu.xmz.recorder.mysql.common.util;
 
 
 /**
@@ -21,6 +21,9 @@ public class ByteConvertUtil {
      * @return
      */
     public static int getIntBn(byte[] bytes) {
+        if(bytes == null || bytes.length == 0) {
+            new IllegalArgumentException("字符数组转换int失败, byte数组不能为空");
+        }
         int result = 0;
         for (int i = 0; i < bytes.length; ++i) {
             result |= (bytes[(bytes.length - 1) - i] << (i << 3));
@@ -33,7 +36,10 @@ public class ByteConvertUtil {
      * @param bytes
      * @return
      */
-    public static int getIntLn(byte[] bytes) {
+    public static int getIntLn(byte... bytes) {
+        if(bytes == null || bytes.length == 0) {
+            new IllegalArgumentException("字符数组转换int失败, byte数组不能为空");
+        }
         int result = 0;
         for (int i = 0; i < bytes.length; ++i) {
             result |= (bytes[i] << (i << 3));

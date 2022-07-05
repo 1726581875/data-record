@@ -1,6 +1,7 @@
 package yanyu.xmz.recorder.mysql.protocol;
 
 import com.github.shyiko.mysql.binlog.network.ClientCapabilities;
+import com.mysql.cj.protocol.a.NativeServerSession;
 
 /**
  * @author xiaomingzhang
@@ -34,12 +35,12 @@ public class CapabilityFlags {
     private  boolean supportsSslVerifyServerCert;
     private  boolean supportsRememberOptions;
     private  boolean supportsSessionTrack;
+    private boolean supportsDeprecateEof;
 
 
 
     private  boolean isInit;
 
-    private  final int CLIENT_SESSION_TRACK = 0x00800000;
 
 
     public CapabilityFlags(int serverCapabilities){
@@ -69,7 +70,11 @@ public class CapabilityFlags {
         supportsPluginAuth = isSupports(ClientCapabilities.PLUGIN_AUTH, serverCapabilities);
         supportsSslVerifyServerCert = isSupports(ClientCapabilities.SSL_VERIFY_SERVER_CERT, serverCapabilities);
         supportsRememberOptions = isSupports(ClientCapabilities.REMEMBER_OPTIONS, serverCapabilities);
-        supportsSessionTrack = isSupports(CLIENT_SESSION_TRACK, serverCapabilities);
+        // ClientCapabilities类一些后面新增的能力没有记录，mysql-jdbc-connector8.0的类NativeServerSession比较全
+        supportsSessionTrack = isSupports(NativeServerSession.CLIENT_SESSION_TRACK, serverCapabilities);
+        // MySQL 5.7.5
+        supportsDeprecateEof = isSupports(NativeServerSession.CLIENT_DEPRECATE_EOF, serverCapabilities);
+
         isInit = true;
     }
 
@@ -169,6 +174,12 @@ public class CapabilityFlags {
         return supportsSessionTrack;
     }
 
+
+    public boolean isSupportsDeprecateEof() {
+        return supportsDeprecateEof;
+    }
+
+
     @Override
     public String toString() {
         return "CapabilityFlags{" +
@@ -195,8 +206,8 @@ public class CapabilityFlags {
                 ", supportsSslVerifyServerCert=" + supportsSslVerifyServerCert +
                 ", supportsRememberOptions=" + supportsRememberOptions +
                 ", supportsSessionTrack=" + supportsSessionTrack +
+                ", supportsDeprecateEof=" + supportsDeprecateEof +
                 ", isInit=" + isInit +
-                ", CLIENT_SESSION_TRACK=" + CLIENT_SESSION_TRACK +
                 '}';
     }
 }

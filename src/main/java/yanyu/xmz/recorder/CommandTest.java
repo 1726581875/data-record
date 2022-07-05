@@ -6,7 +6,6 @@ import yanyu.xmz.recorder.mysql.common.ResultParser;
 import yanyu.xmz.recorder.mysql.common.ResultPacket;
 import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 import yanyu.xmz.recorder.mysql.channel.ChannelManager;
-import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
 
 import java.io.IOException;
 
@@ -14,23 +13,9 @@ import java.io.IOException;
  * @author xiaomingzhang
  * @date 2022/6/29
  */
-public class CommandTest {
+public class CommandTest extends BaseTest {
 
 
-    private static final String hostname;
-
-    private static final Integer port;
-
-    private static final String username;
-
-    private static final String password;
-
-    static {
-        hostname = PropertiesReaderUtil.get("mysql.listener.hostname");
-        port = Integer.valueOf(PropertiesReaderUtil.get("mysql.listener.port"));
-        username = PropertiesReaderUtil.get("mysql.listener.username");
-        password = PropertiesReaderUtil.get("mysql.listener.password");
-    }
 
 
     public static void main(String[] args) throws IOException {

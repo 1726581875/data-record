@@ -22,6 +22,8 @@ public class ByteArrayInputStreamReader extends ByteArrayInputStream {
     /**
      * https://dev.mysql.com/doc/internals/en/integer.html
      * Length-Encoded Integer Type
+     * todo 该方法父类已经实现
+     * @see com.github.shyiko.mysql.binlog.io.ByteArrayInputStream#readPackedNumber
      * @return
      * @throws IOException
      */

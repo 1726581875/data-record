@@ -10,7 +10,6 @@ import com.github.shyiko.mysql.binlog.network.protocol.PacketChannel;
 import com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateCommand;
 import com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateNativePasswordCommand;
 import com.github.shyiko.mysql.binlog.network.protocol.command.Command;
-import com.mysql.cj.protocol.a.NativeServerSession;
 import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 
 import java.io.IOException;

@@ -12,6 +12,9 @@ import yanyu.xmz.recorder.business.dao.util.NameConvertUtil;
 
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -93,6 +96,14 @@ public class MysqlBaseDAO implements BaseDAO {
                 value = ((Byte) value).intValue();
             }
         }
+        // fix: Can not set java.util.Date field EventRecord.createTime to java.time.LocalDateTime
+        if(value instanceof LocalDateTime && field.getType() == Date.class){
+            // 时区
+            ZoneId zoneId = ZoneId.systemDefault();
+            Instant instant = ((LocalDateTime)value).atZone(zoneId).toInstant();
+            value = Date.from(instant);
+        }
+
         return value;
     }
 

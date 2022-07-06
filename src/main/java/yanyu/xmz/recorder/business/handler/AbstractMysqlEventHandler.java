@@ -18,21 +18,33 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
     protected static final Gson gson = new Gson();
 
-    private static Long binLogStartPos = null;
+    private static Long binLogStartPos;
+
+    private static String binLogFileName;
 
     private static final Logger log = LoggerFactory.getLogger(AbstractMysqlEventHandler.class);
 
     @Override
-    public void saveEvent(Long startPos, Event event) {
+    public void saveEvent(Long startPos, String fileName, Event event) {
 
         if(binLogStartPos == null) {
             binLogStartPos = startPos;
         }
 
+        if(binLogFileName == null) {
+            binLogFileName = fileName;
+        }
+
+
+        log.info("=====>事件类型={},pos={}",event.getHeader().getEventType().name(), binLogStartPos);
+
         EventRecord eventRecord = initEventRecord(event);
 
         try {
+            // 保存事件信息和数据更改记录到数据库
             saveEventDetailToDatabase(event, eventRecord);
+
+            eventRecord.setStep(StepEnum.SAVE_DATA_SUCCESS.name());
             eventRecord.setState(StateEnum.SUCCESS.name());
         } catch (Exception e) {
             log.error("保存事件信息失败,startPos={}", startPos, e);
@@ -48,9 +60,9 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         EventRecord dataRecord = new EventRecord();
         dataRecord.setOperationType(eventType.name());
         dataRecord.setPos(binLogStartPos);
+        dataRecord.setBinLogFileName(binLogFileName);
         dataRecord.setState(StateEnum.RUNNING.name());
         dataRecord.setStep(StepEnum.INIT.name());
-
         // 保存到数据库
         Long id = BaseDAO.mysqlInstance().insertReturnKey(dataRecord);
         dataRecord.setId(id);
@@ -85,6 +97,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
             dataRecord.setBinLogFileName(rotateEventData.getBinlogFilename());
             dataRecord.setEndLogPos(rotateEventData.getBinlogPosition());
             binLogStartPos = rotateEventData.getBinlogPosition();
+            binLogFileName = rotateEventData.getBinlogFilename();
         } else
             // do not update binlogPosition on TABLE_MAP so that in case of reconnect (using a different instance of
             // client) table mapping cache could be reconstructed before hitting row mutation event

@@ -20,6 +20,7 @@ public class HandlerFactory {
         eventHandlerMap.put(UpdateRowsEventData.class, new UpdateEventHandler());
         eventHandlerMap.put(DeleteRowsEventData.class, new DeleteEventHandler());
         eventHandlerMap.put(XidEventData.class, new XidHandler());
+        eventHandlerMap.put(QueryEventData.class, new QueryEventHandler());
     }
 
     public static DbEventHandler getHandler(Class<?> eventData) {

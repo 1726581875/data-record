@@ -33,6 +33,8 @@ public class ByteConvertUtil {
 
     /**
      * 小端序Little-Endian字节数组转int
+     * 和大端序转int一样，见
+     * @see this#getIntBn
      * @param bytes
      * @return
      */

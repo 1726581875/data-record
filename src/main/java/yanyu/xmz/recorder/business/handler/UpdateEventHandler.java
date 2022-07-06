@@ -39,8 +39,6 @@ public class UpdateEventHandler extends AbstractMysqlEventHandler {
             updateRowRecords.add(new UpdateRowRecord(eventRecord.getId(), gson.toJson(row.getKey()), gson.toJson(row.getValue())));
         }
         BaseDAO.mysqlInstance().batchInsert(updateRowRecords);
-        eventRecord.setStep(StepEnum.SAVE_DATA_SUCCESS.name());
-
         return eventRecord;
     }
 }

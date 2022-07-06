@@ -12,11 +12,9 @@ import java.security.NoSuchAlgorithmException;
 /**
  * @author xiaomingzhang
  * @date 2022/7/5
- * 重写发送授权包命令，AuthenticateCommand原先源码不支持协商能力
  * @see com.github.shyiko.mysql.binlog.network.protocol.command.AuthenticateCommand#toByteArray
  */
 public class MyAuthenticateCommand implements Command {
-
 
     private String schema;
     private String username;

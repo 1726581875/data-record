@@ -126,7 +126,7 @@ public class ResultParser {
         // OK Packet
         // TODO 官方文档不准确？发现有包长=7的OK Packet
        /*
-         OK: header = 0 and length of packet > 7
+          OK: header = 0 and length of packet > 7
           EOF: header = 0xfe and length of packet < 9
         */
         if (header == (byte)NativeConstants.TYPE_ID_OK) {

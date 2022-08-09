@@ -42,7 +42,7 @@ public class EventRecord {
      * 操作类型
      * @see  com.github.shyiko.mysql.binlog.event.EventType
      */
-    private String operationType;
+    private String eventType;
 
     /**
      * 包含列
@@ -127,12 +127,12 @@ public class EventRecord {
         this.tableName = tableName;
     }
 
-    public String getOperationType() {
-        return operationType;
+    public String getEventType() {
+        return eventType;
     }
 
-    public void setOperationType(String operationType) {
-        this.operationType = operationType;
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
     }
 
     public String getIncludedColumns() {

@@ -14,13 +14,14 @@ public class QueryEventHandler extends AbstractMysqlEventHandler {
 
     @Override
     protected EventRecord saveEventDetailToDatabase(Event event, EventRecord eventRecord) {
-        BaseDAO.mysqlInstance().insert(getQueryEventRecord(event));
+        BaseDAO.mysqlInstance().insert(getQueryEventRecord(event, eventRecord.getId()));
         return null;
     }
 
-    private QueryEventRecord getQueryEventRecord(Event event) {
+    private QueryEventRecord getQueryEventRecord(Event event, Long recordId) {
         QueryEventData data = event.getData();
         QueryEventRecord queryRecord = new QueryEventRecord();
+        queryRecord.setRecordId(recordId);
         queryRecord.setDatabase(data.getDatabase());
         queryRecord.setSql(data.getSql());
         queryRecord.setErrorCode(data.getErrorCode());

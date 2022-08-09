@@ -2,6 +2,7 @@ package yanyu.xmz.recorder.business.entity;
 
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
+import yanyu.xmz.recorder.business.dao.annotation.TableField;
 
 import java.util.Date;
 
@@ -13,9 +14,10 @@ public class QueryEventRecord {
 
     @Id
     private Long id;
-
+    private Long recordId;
     private Long threadId;
     private String database;
+    @TableField(value = "sql", type = "text")
     private String sql;
     private Integer errorCode;
     private Long executionTime;
@@ -33,6 +35,15 @@ public class QueryEventRecord {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public Long getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(Long recordId) {
+        this.recordId = recordId;
     }
 
     public Long getThreadId() {

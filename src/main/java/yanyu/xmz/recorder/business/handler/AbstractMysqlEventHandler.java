@@ -58,7 +58,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
     private EventRecord initEventRecord(Event event) {
         EventType eventType = event.getHeader().getEventType();
         EventRecord dataRecord = new EventRecord();
-        dataRecord.setOperationType(eventType.name());
+        dataRecord.setEventType(eventType.name());
         dataRecord.setPos(binLogStartPos);
         dataRecord.setBinLogFileName(binLogFileName);
         dataRecord.setState(StateEnum.RUNNING.name());

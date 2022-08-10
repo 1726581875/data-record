@@ -1,6 +1,6 @@
-package yanyu.xmz.recorder;
+package yanyu.xmz.recorder.test;
 
-import com.github.shyiko.mysql.binlog.network.protocol.command.QueryCommand;
+import com.github.shyiko.mysql.binlog.network.protocol.command.DumpBinaryLogCommand;
 import yanyu.xmz.recorder.mysql.channel.ChannelManager;
 import yanyu.xmz.recorder.mysql.channel.MyPacketChannel;
 import yanyu.xmz.recorder.mysql.common.ResultPacket;
@@ -10,11 +10,9 @@ import java.io.IOException;
 
 /**
  * @author xiaomingzhang
- * @date 2022/7/5
+ * @date 2022/7/18
  */
-public class QueryCommandTest extends BaseTest {
-
-
+public class BinlogDumpTest extends BaseTest {
 
     public static void main(String[] args) throws IOException {
 
@@ -22,17 +20,9 @@ public class QueryCommandTest extends BaseTest {
 
         try {
             MyPacketChannel chanel = connectionChannel.getChanel();
-            chanel.write(new QueryCommand("show databases"));
+            chanel.write(new DumpBinaryLogCommand(2, "mysql-bin.000001",10));
             ResultPacket resultPacket = ResultParser.parseComQueryResult(connectionChannel, false);
             System.out.println(resultPacket);
-
-            chanel.write(new QueryCommand("create database xxx_xmz"));
-            ResultPacket resultPacket1 = ResultParser.parseComQueryResult(connectionChannel, false);
-            System.out.println(resultPacket1);
-
-            chanel.write(new QueryCommand("drop database xxx_xmz"));
-            ResultPacket resultPacket2 = ResultParser.parseComQueryResult(connectionChannel, false);
-            System.out.println(resultPacket2);
 
         } catch (Exception e){
             e.printStackTrace();
@@ -40,10 +30,6 @@ public class QueryCommandTest extends BaseTest {
             connectionChannel.close();
         }
     }
-
-
-
-
 
 
 }

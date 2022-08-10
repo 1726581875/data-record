@@ -29,6 +29,10 @@ public class EventRecord {
      */
     private Long endLogPos;
     /**
+     * 语句开始执行的时间
+     */
+    private Date eventTimestamp;
+    /**
      * 数据库名
      */
     private String databaseName;
@@ -53,6 +57,7 @@ public class EventRecord {
      */
     private String includedColumnsBeforeUpdate;
 
+
     /**
      * 业务步骤
      * @see StepEnum
@@ -64,10 +69,14 @@ public class EventRecord {
      * @see StateEnum
      */
     private String state;
-
+    /**
+     * 业务字段
+     */
     @DateAuto
     private Date createTime;
-
+    /**
+     * 业务字段
+     */
     @DateAuto("update")
     private Date updateTime;
 
@@ -149,6 +158,14 @@ public class EventRecord {
 
     public void setIncludedColumnsBeforeUpdate(String includedColumnsBeforeUpdate) {
         this.includedColumnsBeforeUpdate = includedColumnsBeforeUpdate;
+    }
+
+    public Date getEventTimestamp() {
+        return eventTimestamp;
+    }
+
+    public void setEventTimestamp(Date eventTimestamp) {
+        this.eventTimestamp = eventTimestamp;
     }
 
     public String getStep() {

@@ -23,7 +23,7 @@ public class InsertEventHandler extends AbstractMysqlEventHandler {
         WriteRowsEventData writeRowsEventData = event.getData();
         eventRecord.setTableId(String.valueOf(writeRowsEventData.getTableId()));
         eventRecord.setIncludedColumns(writeRowsEventData.getIncludedColumns().toString());
-        eventRecord.setStep(StepEnum.SAVE_EVENT_SUCCESS.name());
+        eventRecord.setStep(StepEnum.SAVE_EVENT.name());
         // 保存事件详情信息
         BaseDAO.mysqlInstance().updateById(eventRecord);
 

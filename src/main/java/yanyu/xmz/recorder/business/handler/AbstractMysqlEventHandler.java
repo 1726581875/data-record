@@ -10,6 +10,8 @@ import yanyu.xmz.recorder.business.entity.EventRecord;
 import yanyu.xmz.recorder.business.enums.StateEnum;
 import yanyu.xmz.recorder.business.enums.StepEnum;
 
+import java.util.Date;
+
 /**
  * @author xiaomingzhang
  * @date 2022/6/14
@@ -36,7 +38,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         }
 
 
-        log.info("=====>事件类型={},pos={}",event.getHeader().getEventType().name(), binLogStartPos);
+        log.info("=====>保存事件信息,类型={},pos={}",event.getHeader().getEventType().name(), binLogStartPos);
 
         EventRecord eventRecord = initEventRecord(event);
 
@@ -44,7 +46,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
             // 保存事件信息和数据更改记录到数据库
             saveEventDetailToDatabase(event, eventRecord);
 
-            eventRecord.setStep(StepEnum.SAVE_DATA_SUCCESS.name());
+            eventRecord.setStep(StepEnum.SAVE_SUCCESS.name());
             eventRecord.setState(StateEnum.SUCCESS.name());
         } catch (Exception e) {
             log.error("保存事件信息失败,startPos={}", startPos, e);
@@ -61,6 +63,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         dataRecord.setEventType(eventType.name());
         dataRecord.setPos(binLogStartPos);
         dataRecord.setBinLogFileName(binLogFileName);
+        dataRecord.setEventTimestamp(new Date(event.getHeader().getTimestamp()));
         dataRecord.setState(StateEnum.RUNNING.name());
         dataRecord.setStep(StepEnum.INIT.name());
         // 保存到数据库
@@ -111,6 +114,9 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
             }
 
         BaseDAO.mysqlInstance().updateById(dataRecord);
+
+
+        log.info("=====>保存事件信息成功,类型={},endPos={}",event.getHeader().getEventType().name(), binLogStartPos);
     }
 
 

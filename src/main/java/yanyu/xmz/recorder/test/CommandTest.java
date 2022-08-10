@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder;
+package yanyu.xmz.recorder.test;
 
 import com.github.shyiko.mysql.binlog.network.protocol.command.*;
 import yanyu.xmz.recorder.mysql.channel.MyPacketChannel;
@@ -6,6 +6,7 @@ import yanyu.xmz.recorder.mysql.common.ResultParser;
 import yanyu.xmz.recorder.mysql.common.ResultPacket;
 import yanyu.xmz.recorder.mysql.protocol.CapabilityFlags;
 import yanyu.xmz.recorder.mysql.channel.ChannelManager;
+import yanyu.xmz.recorder.test.BaseTest;
 
 import java.io.IOException;
 

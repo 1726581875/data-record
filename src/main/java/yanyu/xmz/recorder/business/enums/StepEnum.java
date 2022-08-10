@@ -13,10 +13,10 @@ public enum StepEnum {
     /**
      * 保存基本事件信息
      */
-    SAVE_EVENT_SUCCESS,
+    SAVE_EVENT,
     /**
      * 保存事件变更数据
      */
-    SAVE_DATA_SUCCESS
+    SAVE_SUCCESS
 
 }

@@ -1,6 +1,7 @@
 package yanyu.xmz.recorder;
 
 import com.github.shyiko.mysql.binlog.event.EventData;
+import com.github.shyiko.mysql.binlog.event.EventHeader;
 import yanyu.xmz.recorder.business.entity.*;
 import yanyu.xmz.recorder.business.handler.DbEventHandler;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
@@ -45,26 +46,22 @@ public class BinLogListener {
         MyBinaryLogClient client = new MyBinaryLogClient(hostname, port,username, password);
 
         // 查询最新一条记录的binlog位置
-        EventRecord lastRecord = BaseDAO.mysqlInstance()
-                .getOne("select * from event_record where " +
-                        "end_log_pos is not null " +
-                        "order by create_time desc limit 1", EventRecord.class);
+        EventRecord lastRecord = getLastRecord();
         if(Objects.nonNull(lastRecord)){
             client.setBinlogFilename(lastRecord.getBinLogFileName());
             client.setBinlogPosition(lastRecord.getEndLogPos());
         }
 
+        // 固定位置读取
         client.setBinlogFilename("mysql-bin.000001");
-        client.setBinlogPosition(4L);
+        client.setBinlogPosition(426769L);
 
         // 注册
         client.registerEventListener(event -> {
-            EventData data = event.getData();
-            if(data != null) {
-                DbEventHandler handler = HandlerFactory.getHandler(data.getClass());
-                if (handler != null) {
-                    handler.saveEvent(client.getBinlogPosition(), client.getBinlogFilename(), event);
-                }
+            EventHeader header = event.getHeader();
+            DbEventHandler handler = HandlerFactory.getHandler(header.getEventType());
+            if (handler != null) {
+                handler.saveEvent(client.getBinlogPosition(), client.getBinlogFilename(), event);
             }
         });
         // 连接
@@ -91,6 +88,13 @@ public class BinLogListener {
         BaseDAO.mysqlInstance().dropTable(DeleteRowRecord.class);
         BaseDAO.mysqlInstance().dropTable(InsertRowRecord.class);
         BaseDAO.mysqlInstance().dropTable(QueryEventRecord.class);
+    }
+
+    private static EventRecord getLastRecord(){
+        return BaseDAO.mysqlInstance()
+                .getOne("select * from event_record where " +
+                        "end_log_pos is not null " +
+                        "order by create_time desc limit 1", EventRecord.class);
     }
 
 

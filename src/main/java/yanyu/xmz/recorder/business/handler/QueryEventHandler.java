@@ -22,8 +22,8 @@ public class QueryEventHandler extends AbstractMysqlEventHandler {
         QueryEventData data = event.getData();
         QueryEventRecord queryRecord = new QueryEventRecord();
         queryRecord.setRecordId(recordId);
-        queryRecord.setDatabase(data.getDatabase());
-        queryRecord.setSql(data.getSql());
+        queryRecord.setDatabaseName(data.getDatabase());
+        queryRecord.setExecSql(data.getSql());
         queryRecord.setErrorCode(data.getErrorCode());
         queryRecord.setExecutionTime(data.getExecutionTime());
         queryRecord.setThreadId(data.getThreadId());

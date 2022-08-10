@@ -16,9 +16,9 @@ public class QueryEventRecord {
     private Long id;
     private Long recordId;
     private Long threadId;
-    private String database;
-    @TableField(value = "sql", type = "text")
-    private String sql;
+    private String databaseName;
+    @TableField(value = "exec_sql", type = "text")
+    private String execSql;
     private Integer errorCode;
     private Long executionTime;
 
@@ -54,20 +54,20 @@ public class QueryEventRecord {
         this.threadId = threadId;
     }
 
-    public String getDatabase() {
-        return database;
+    public String getDatabaseName() {
+        return databaseName;
     }
 
-    public void setDatabase(String database) {
-        this.database = database;
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
-    public String getSql() {
-        return sql;
+    public String getExecSql() {
+        return execSql;
     }
 
-    public void setSql(String sql) {
-        this.sql = sql;
+    public void setExecSql(String execSql) {
+        this.execSql = execSql;
     }
 
     public Integer getErrorCode() {

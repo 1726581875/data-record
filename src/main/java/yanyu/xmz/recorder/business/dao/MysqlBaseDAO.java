@@ -320,6 +320,14 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     @Override
+    public <T> void dropTable(Class<T> entity) {
+        String tableName = getTableName(entity);
+        // 执行sql
+        exec("drop table " + tableName);
+        log.info("删除表{}成功", tableName);
+    }
+
+    @Override
     public <T> void createTableIfNotExist(Class<T> entity) {
 
         Connection connection = ConnectionManagerUtil.getConnection();

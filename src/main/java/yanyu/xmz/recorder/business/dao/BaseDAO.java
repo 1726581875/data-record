@@ -77,6 +77,13 @@ public interface BaseDAO {
     <T> void createTable(Class<T> entity);
 
     /**
+     * 删除表
+     * @param entity
+     * @param <T>
+     */
+    <T> void dropTable(Class<T> entity);
+
+    /**
      * 创建表
      * @param entity
      * @param <T>

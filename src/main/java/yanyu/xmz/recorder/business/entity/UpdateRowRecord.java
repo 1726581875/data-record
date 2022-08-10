@@ -17,11 +17,11 @@ public class UpdateRowRecord {
 
     private Long recordId;
 
-    @TableField(value = "before", type = "text")
-    private String before;
+    @TableField(value = "before_row", type = "text")
+    private String beforeRow;
 
-    @TableField(value = "after", type = "text")
-    private String after;
+    @TableField(value = "after_row", type = "text")
+    private String afterRow;
 
     @DateAuto
     private Date createTime;
@@ -32,8 +32,8 @@ public class UpdateRowRecord {
 
     public UpdateRowRecord(Long recordId, String before, String after) {
         this.recordId = recordId;
-        this.before = before;
-        this.after = after;
+        this.beforeRow = before;
+        this.afterRow = after;
     }
 
     public UpdateRowRecord() {
@@ -56,20 +56,20 @@ public class UpdateRowRecord {
         this.recordId = recordId;
     }
 
-    public String getBefore() {
-        return before;
+    public String getBeforeRow() {
+        return beforeRow;
     }
 
-    public void setBefore(String before) {
-        this.before = before;
+    public void setBeforeRow(String beforeRow) {
+        this.beforeRow = beforeRow;
     }
 
-    public String getAfter() {
-        return after;
+    public String getAfterRow() {
+        return afterRow;
     }
 
-    public void setAfter(String after) {
-        this.after = after;
+    public void setAfterRow(String afterRow) {
+        this.afterRow = afterRow;
     }
 
     public Date getCreateTime() {

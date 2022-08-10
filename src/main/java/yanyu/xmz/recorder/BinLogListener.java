@@ -36,6 +36,9 @@ public class BinLogListener {
 
     public static void main(String[] args) {
 
+        // 删除表
+        dropTables();
+
         // 初始化表
         initTable();
 
@@ -80,6 +83,14 @@ public class BinLogListener {
         BaseDAO.mysqlInstance().createTableIfNotExist(DeleteRowRecord.class);
         BaseDAO.mysqlInstance().createTableIfNotExist(InsertRowRecord.class);
         BaseDAO.mysqlInstance().createTableIfNotExist(QueryEventRecord.class);
+    }
+
+    private static void dropTables() {
+        BaseDAO.mysqlInstance().dropTable(EventRecord.class);
+        BaseDAO.mysqlInstance().dropTable(UpdateRowRecord.class);
+        BaseDAO.mysqlInstance().dropTable(DeleteRowRecord.class);
+        BaseDAO.mysqlInstance().dropTable(InsertRowRecord.class);
+        BaseDAO.mysqlInstance().dropTable(QueryEventRecord.class);
     }
 
 

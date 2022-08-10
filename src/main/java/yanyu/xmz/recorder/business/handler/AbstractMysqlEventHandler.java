@@ -24,6 +24,12 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
     private static String binLogFileName;
 
+    protected static String tableName;
+
+    protected static String databaseName;
+
+   //private static String tableMapEndPop;
+
     private static final Logger log = LoggerFactory.getLogger(AbstractMysqlEventHandler.class);
 
     @Override

@@ -126,7 +126,7 @@ public class MysqlBaseDAO implements BaseDAO {
             throw new RuntimeException("插入元素为空, 请检查参数");
         }
         String insertSql = getInsertPrepareSQL(obj);
-        log.debug(insertSql);
+        //log.debug(insertSql);
         try (Connection conn = ConnectionManagerUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(insertSql)) {
             return execUpdate(statement, obj);

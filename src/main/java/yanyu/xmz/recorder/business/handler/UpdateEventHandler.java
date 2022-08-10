@@ -28,6 +28,10 @@ public class UpdateEventHandler extends AbstractMysqlEventHandler {
         eventRecord.setIncludedColumns(updateRowsEventData.getIncludedColumns().toString());
         eventRecord.setIncludedColumnsBeforeUpdate(updateRowsEventData.getIncludedColumnsBeforeUpdate().toString());
         eventRecord.setStep(StepEnum.SAVE_EVENT.name());
+        eventRecord.setTableName(tableName);
+        eventRecord.setDatabaseName(databaseName);
+        tableName = null;
+        databaseName = null;
         // 事件信息保存到数据库
         BaseDAO.mysqlInstance().updateById(eventRecord);
 

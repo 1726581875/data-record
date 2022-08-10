@@ -1,6 +1,5 @@
 package yanyu.xmz.recorder;
 
-import com.github.shyiko.mysql.binlog.event.EventData;
 import com.github.shyiko.mysql.binlog.event.EventHeader;
 import yanyu.xmz.recorder.business.entity.*;
 import yanyu.xmz.recorder.business.handler.DbEventHandler;
@@ -55,6 +54,7 @@ public class BinLogListener {
         // 固定位置读取
         client.setBinlogFilename("mysql-bin.000001");
         client.setBinlogPosition(426769L);
+        client.setBinlogPosition(4L);
 
         // 注册
         client.registerEventListener(event -> {

@@ -24,6 +24,10 @@ public class DeleteEventHandler extends AbstractMysqlEventHandler {
         eventRecord.setTableId(String.valueOf(deleteRowsEventData.getTableId()));
         eventRecord.setIncludedColumns(deleteRowsEventData.getIncludedColumns().toString());
         eventRecord.setStep(StepEnum.SAVE_EVENT.name());
+        eventRecord.setTableName(tableName);
+        eventRecord.setDatabaseName(databaseName);
+        tableName = null;
+        databaseName = null;
         // 保存事件基础信息到数据库
         BaseDAO.mysqlInstance().updateById(eventRecord);
 

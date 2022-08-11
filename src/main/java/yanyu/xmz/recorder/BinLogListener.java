@@ -53,7 +53,7 @@ public class BinLogListener {
 
         // 固定位置读取
         client.setBinlogFilename("mysql-bin.000001");
-        client.setBinlogPosition(426769L);
+        //client.setBinlogPosition(426769L);
         client.setBinlogPosition(4L);
 
         // 注册

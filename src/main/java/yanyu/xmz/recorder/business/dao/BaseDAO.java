@@ -70,6 +70,16 @@ public interface BaseDAO {
     <T> int batchDeleteByIds(List<T> ids);
 
     /**
+     * 根据id删除
+     * @param entity
+     * @param id
+     * @param <T>
+     * @return
+     */
+    <T> boolean deleteById(Class<T> entity, Object id);
+
+
+    /**
      * 创建表
      * @param entity
      * @param <T>

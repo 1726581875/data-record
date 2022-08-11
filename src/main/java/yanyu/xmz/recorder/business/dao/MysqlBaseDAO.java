@@ -75,7 +75,12 @@ public class MysqlBaseDAO implements BaseDAO {
                     String fieldName = NameConvertUtil.toDbRule(field.getName());
                     // 字段匹配，存在的列才获取结果并赋值,不存在的列则不做处理保持为null
                     if (tableColumnNameSet.contains(fieldName)) {
-                        Object value = resultSet.getObject(fieldName);
+                        Object value = null;
+                        if(field.getType() == Long.class){
+                            value = resultSet.getLong(fieldName);
+                        } else {
+                             value = resultSet.getObject(fieldName);
+                        }
                         if (Objects.nonNull(value)) {
                             // todo 通过setxxx方法设置值
                             field.setAccessible(true);
@@ -235,7 +240,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     private void setParam(PreparedStatement statement, Object object) throws SQLException, IllegalAccessException {
-        Map<String, FieldDetail> fieldDetailMap = fieldDetailMapThreadLocal.get();
+        Map<String, FieldDetail> fieldDetailMap = fieldDetailMapThreadLocal.get() == null ? new HashMap<>() : fieldDetailMapThreadLocal.get();
         Class<?> objectClass = object.getClass();
         Field[] declaredFields = objectClass.getDeclaredFields();
         for (Field field : declaredFields) {
@@ -308,6 +313,32 @@ public class MysqlBaseDAO implements BaseDAO {
 
         return 0;
     }
+
+    @Override
+    public <T> boolean deleteById(Class<T> entity, Object id) {
+        String sqlTemplate = "delete from %s where %s = ?";
+        String preSql = String.format(sqlTemplate, getTableName(entity), getId(entity));
+        try (Connection conn = ConnectionManagerUtil.getConnection();
+             PreparedStatement statement = conn.prepareStatement(preSql)) {
+             statement.setObject(1, id);
+             return statement.execute();
+        } catch (Exception e) {
+            log.error("删除失败,id={},sql={}",id,preSql, e);
+            throw new RuntimeException("根据id删除失败:" + e.getMessage());
+        }
+    }
+
+
+    private String getId(Class<?> entity){
+        Field[] fields = entity.getDeclaredFields();
+        for (Field field : fields) {
+            if (Objects.nonNull(field.getAnnotation(Id.class))) {
+                return NameConvertUtil.toDbRule(field.getName());
+            }
+        }
+        throw new RuntimeException("不存在id字段");
+    }
+
 
     @Override
     public <T> void createTable(Class<T> entity) {
@@ -496,7 +527,7 @@ public class MysqlBaseDAO implements BaseDAO {
         Set<String> fieldNameSet = new HashSet<>();
         ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            fieldNameSet.add(metaData.getColumnLabel(i));
+            fieldNameSet.add(metaData.getColumnLabel(i).toLowerCase());
         }
         return fieldNameSet;
     }

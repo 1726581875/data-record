@@ -5,6 +5,7 @@ import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.entity.EventRecord;
 import yanyu.xmz.recorder.business.entity.QueryEventRecord;
+import yanyu.xmz.recorder.business.handler.metadata.MysqlMetadataChangeHandler;
 
 /**
  * @author xiaomingzhang
@@ -15,6 +16,21 @@ public class QueryEventHandler extends AbstractMysqlEventHandler {
     @Override
     protected EventRecord saveEventDetailToDatabase(Event event, EventRecord eventRecord) {
         BaseDAO.mysqlInstance().insert(getQueryEventRecord(event, eventRecord.getId()));
+        QueryEventData data = event.getData();
+
+        // 处理mysql元数据变更
+        if(data.getSql().contains("ALTER TABLE")) {
+            String[] sqlArr = data.getSql().split(";");
+            for (String sql : sqlArr) {
+                if(sql.contains("ALTER TABLE")) {
+                    try {
+                        MysqlMetadataChangeHandler.analyzeTableFieldChange(sql);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
         return null;
     }
 

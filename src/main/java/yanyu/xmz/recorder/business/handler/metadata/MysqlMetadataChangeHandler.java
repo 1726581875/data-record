@@ -21,7 +21,7 @@ public class MysqlMetadataChangeHandler {
 
 
     public static void main(String[] args) {
-        analyzeTableFieldChange("ALTER TABLE `xmz_test`.`table1` ADD COLUMN `file2` varchar(255) NULL AFTER `field`");
+        analyzeTableFieldChange("ALTER TABLE `xmz_test`.`table1` ADD COLUMN `file2` varchar(255) NULL AFTER `field`", null);
     }
 
     /**
@@ -29,15 +29,25 @@ public class MysqlMetadataChangeHandler {
      * ALTER TABLE `xmz_test`.`table1` DROP COLUMN `file2`
      * @return
      */
-    public static String analyzeTableFieldChange(String sql){
+    public static void analyzeTableFieldChange(String sql,String dbName) {
 
         String[] split = sql.split("\\s+");
         String option = split[3];
-
+        String optionType = split[4];
+        if(!"COLUMN".equals(optionType) || !"column".equals(optionType)){
+            return;
+        }
 
         String[] names = split[2].split("\\.");
-        String databaseName = removeChar(names[0],"`");
-        String tableName = removeChar(names[1],"`");
+        String databaseName = null;
+        String tableName = null;
+        if(names.length == 2) {
+             databaseName = removeChar(names[0], "`");
+             tableName = removeChar(names[1], "`");
+        } else {
+             tableName = removeChar(names[0], "`");
+             databaseName = dbName;
+        }
         String columnName = removeChar(split[5],"`");
 
 
@@ -45,15 +55,15 @@ public class MysqlMetadataChangeHandler {
         System.out.println(querySql);
         List<MysqlMetadata> fieldMetadataList = BaseDAO.mysqlInstance().getList(querySql, MysqlMetadata.class);
         List<MysqlMetadata> updateColumnList = new ArrayList<>();
-        switch (option) {
+        switch (option.toUpperCase()) {
             // 新增字段
-            case ADD:
+            case "ADD":
                 MysqlMetadata mysqlMetadata = new MysqlMetadata();
                 mysqlMetadata.setTableSchema(databaseName);
                 mysqlMetadata.setTableName(tableName);
                 mysqlMetadata.setColumnName(columnName);
                 // 中级某个位置插入列
-                if(sql.contains("AFTER")) {
+                if(sql.contains("AFTER") || sql.contains("after")) {
                     String beforeColumn = removeChar(split[split.length -1], "`");
                     long index = 0L;
                     for (MysqlMetadata metadata: fieldMetadataList) {
@@ -78,7 +88,7 @@ public class MysqlMetadataChangeHandler {
 
                 break;
             // 删除字段
-            case DROP:
+            case "DROP":
                 Long ordinalPosition = null;
                 for (MysqlMetadata metadata: fieldMetadataList) {
                     // 删除对应列
@@ -98,12 +108,16 @@ public class MysqlMetadataChangeHandler {
                     }
                 }
                 break;
+
+            case "CHANGE":
+
+                break;
+
+
             default:
                 throw new IllegalArgumentException("操作不允许,option=" + option + ", sql=" + sql);
         }
 
-
-        return "";
     }
 
 

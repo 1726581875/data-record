@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.entity.EventRecord;
+import yanyu.xmz.recorder.business.entity.metadata.MysqlMetadata;
 import yanyu.xmz.recorder.business.enums.StateEnum;
 import yanyu.xmz.recorder.business.enums.StepEnum;
 
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author xiaomingzhang
@@ -28,7 +30,11 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
     protected static String databaseName;
 
-   //private static String tableMapEndPop;
+    /**
+     * 元数据缓存
+     * Map<dbName,Map<tableName,List<MysqlMetadata>>>
+     */
+    protected static Map<String, Map<String, List<MysqlMetadata>>>  metadataCacheMap = new HashMap<>();
 
     private static final Logger log = LoggerFactory.getLogger(AbstractMysqlEventHandler.class);
 
@@ -37,6 +43,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
         if(binLogStartPos == null) {
             binLogStartPos = startPos;
+            initMetadataCache();
         }
 
         if(binLogFileName == null) {
@@ -60,6 +67,31 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         }
 
         recordNextBinLogPos(event, eventRecord);
+    }
+
+
+    protected void initMetadataCache() {
+        synchronized (AbstractMysqlEventHandler.class) {
+
+            List<MysqlMetadata> metadataList = BaseDAO.mysqlInstance().getList("select * from mysql_metadata", MysqlMetadata.class);
+            if(metadataList == null || metadataList.size() == 0){
+                return;
+            }
+            Map<String, Map<String, List<MysqlMetadata>>>  metadataMap = new HashMap<>();
+
+            Map<String, List<MysqlMetadata>> map = metadataList.stream().collect(Collectors.groupingBy(MysqlMetadata::getTableSchema));
+            map.forEach((k,v) -> metadataMap.put(k, v.stream().collect(Collectors.groupingBy(MysqlMetadata::getTableName))));
+
+            // 列字段排序
+            metadataMap.forEach((dbName, tableMap) -> {
+                tableMap.forEach((tableName, columnList) -> {
+                    columnList.sort(Comparator.comparingLong(MysqlMetadata::getOrdinalPosition));
+                });
+            });
+
+            metadataCacheMap = metadataMap;
+
+        }
     }
 
 
@@ -123,6 +155,44 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
 
         log.info("=====>保存事件信息成功,类型={},endPos={}",event.getHeader().getEventType().name(), binLogStartPos);
+    }
+
+
+
+    protected List<MysqlMetadata> getColumnList(String dbName, String tableName) {
+
+        Map<String, List<MysqlMetadata>> map = metadataCacheMap.get(dbName);
+        if(map == null) {
+            return new ArrayList<>();
+        }
+        List<MysqlMetadata> metadataList = map.get(tableName);
+        if(metadataList == null){
+            return new ArrayList<>();
+        }
+        return metadataList;
+    }
+
+
+    protected String getColumnNames(BitSet columns) {
+        List<MysqlMetadata> columnList = getColumnList(databaseName, tableName);
+        if(columnList != null && columnList.size() > 0) {
+            String[] columnNames = new String[columns.length()];
+            columns.stream().forEach(i -> {
+                if(i >= columnList.size()){
+                    columnNames[i] = null;
+                } else {
+                    MysqlMetadata column = columnList.get(i);
+                    if(column != null && column.getOrdinalPosition() == i + 1) {
+                        columnNames[i] =  column.getColumnName();
+                    } else {
+                        columnNames[i] = null;
+                    }
+                }
+            });
+
+            return gson.toJson(columnNames);
+        }
+        return null;
     }
 
 

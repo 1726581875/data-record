@@ -30,6 +30,9 @@ public class UpdateEventHandler extends AbstractMysqlEventHandler {
         eventRecord.setStep(StepEnum.SAVE_EVENT.name());
         eventRecord.setTableName(tableName);
         eventRecord.setDatabaseName(databaseName);
+        eventRecord.setIncludedColumns(getColumnNames(updateRowsEventData.getIncludedColumns()));
+        eventRecord.setColumnNamesBeforeUpdate(getColumnNames(updateRowsEventData.getIncludedColumnsBeforeUpdate()));
+
         tableName = null;
         databaseName = null;
         // 事件信息保存到数据库

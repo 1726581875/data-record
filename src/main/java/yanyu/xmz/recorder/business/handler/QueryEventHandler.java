@@ -19,18 +19,18 @@ public class QueryEventHandler extends AbstractMysqlEventHandler {
         QueryEventData data = event.getData();
 
         // 处理mysql元数据变更
-        if(data.getSql().contains("ALTER TABLE")) {
+/*        if(data.getSql().contains("ALTER TABLE") || data.getSql().contains("alter table")) {
             String[] sqlArr = data.getSql().split(";");
             for (String sql : sqlArr) {
-                if(sql.contains("ALTER TABLE")) {
+                if(sql.contains("ALTER TABLE") || data.getSql().contains("alter table")) {
                     try {
-                        MysqlMetadataChangeHandler.analyzeTableFieldChange(sql);
+                        MysqlMetadataChangeHandler.analyzeTableFieldChange(sql, data.getDatabase());
                     }catch (Exception e){
                         e.printStackTrace();
                     }
                 }
             }
-        }
+        }*/
         return null;
     }
 

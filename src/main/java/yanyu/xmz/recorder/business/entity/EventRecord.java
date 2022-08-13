@@ -59,6 +59,15 @@ public class EventRecord {
 
 
     /**
+     * 包含列名称
+     */
+    private String includedColumnNames;
+    /**
+     * 更新之后的列名称
+     */
+    private String columnNamesBeforeUpdate;
+
+    /**
      * 业务步骤
      * @see StepEnum
      */
@@ -166,6 +175,23 @@ public class EventRecord {
 
     public void setEventTimestamp(Date eventTimestamp) {
         this.eventTimestamp = eventTimestamp;
+    }
+
+
+    public String getIncludedColumnNames() {
+        return includedColumnNames;
+    }
+
+    public void setIncludedColumnNames(String includedColumnNames) {
+        this.includedColumnNames = includedColumnNames;
+    }
+
+    public String getColumnNamesBeforeUpdate() {
+        return columnNamesBeforeUpdate;
+    }
+
+    public void setColumnNamesBeforeUpdate(String columnNamesBeforeUpdate) {
+        this.columnNamesBeforeUpdate = columnNamesBeforeUpdate;
     }
 
     public String getStep() {

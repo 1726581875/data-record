@@ -45,15 +45,15 @@ public class BinLogListener {
         MyBinaryLogClient client = new MyBinaryLogClient(hostname, port,username, password);
 
         // 查询最新一条记录的binlog位置
-        EventRecord lastRecord = getLastRecord();
+/*        EventRecord lastRecord = getLastRecord();
         if(Objects.nonNull(lastRecord)){
             client.setBinlogFilename(lastRecord.getBinLogFileName());
             client.setBinlogPosition(lastRecord.getEndLogPos());
-        }
+        }*/
 
-        // 固定位置读取
+         // 固定位置读取
         client.setBinlogFilename("mysql-bin.000001");
-        //client.setBinlogPosition(426769L);
+        client.setBinlogPosition(429220L);
         client.setBinlogPosition(4L);
 
         // 注册

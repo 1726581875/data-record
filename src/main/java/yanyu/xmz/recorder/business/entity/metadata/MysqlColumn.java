@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * 查询表结构元数据 select * from INFORMATION_SCHEMA.COLUMNS
  */
-public class MysqlMetadata {
+public class MysqlColumn {
 
     @Id
     private Long id;

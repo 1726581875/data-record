@@ -53,7 +53,7 @@ public class EventRecord {
      */
     private String includedColumns;
     /**
-     * 更新之后的列
+     * 更新之前的列
      */
     private String includedColumnsBeforeUpdate;
 
@@ -63,7 +63,7 @@ public class EventRecord {
      */
     private String includedColumnNames;
     /**
-     * 更新之后的列名称
+     * 更新之前的列名称
      */
     private String columnNamesBeforeUpdate;
 

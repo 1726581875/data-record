@@ -1,7 +1,7 @@
 package yanyu.xmz.recorder.business.handler.metadata;
 
 import yanyu.xmz.recorder.business.dao.BaseDAO;
-import yanyu.xmz.recorder.business.entity.metadata.MysqlMetadata;
+import yanyu.xmz.recorder.business.entity.metadata.MysqlColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,12 +53,12 @@ public class MysqlMetadataChangeHandler {
 
         String querySql = "select * from mysql_metadata where table_schema='" + databaseName + "' and table_name='" + tableName + "' order by ordinal_position";
         System.out.println(querySql);
-        List<MysqlMetadata> fieldMetadataList = BaseDAO.mysqlInstance().getList(querySql, MysqlMetadata.class);
-        List<MysqlMetadata> updateColumnList = new ArrayList<>();
+        List<MysqlColumn> fieldMetadataList = BaseDAO.mysqlInstance().getList(querySql, MysqlColumn.class);
+        List<MysqlColumn> updateColumnList = new ArrayList<>();
         switch (option.toUpperCase()) {
             // 新增字段
             case "ADD":
-                MysqlMetadata mysqlMetadata = new MysqlMetadata();
+                MysqlColumn mysqlMetadata = new MysqlColumn();
                 mysqlMetadata.setTableSchema(databaseName);
                 mysqlMetadata.setTableName(tableName);
                 mysqlMetadata.setColumnName(columnName);
@@ -66,7 +66,7 @@ public class MysqlMetadataChangeHandler {
                 if(sql.contains("AFTER") || sql.contains("after")) {
                     String beforeColumn = removeChar(split[split.length -1], "`");
                     long index = 0L;
-                    for (MysqlMetadata metadata: fieldMetadataList) {
+                    for (MysqlColumn metadata: fieldMetadataList) {
                         if(metadata.getColumnName().equals(beforeColumn)) {
                             mysqlMetadata.setOrdinalPosition(metadata.getOrdinalPosition() + 1L);
                             index = metadata.getOrdinalPosition();
@@ -90,16 +90,16 @@ public class MysqlMetadataChangeHandler {
             // 删除字段
             case "DROP":
                 Long ordinalPosition = null;
-                for (MysqlMetadata metadata: fieldMetadataList) {
+                for (MysqlColumn metadata: fieldMetadataList) {
                     // 删除对应列
                     if(metadata.getColumnName().equals(columnName)) {
                         ordinalPosition = metadata.getOrdinalPosition();
-                        BaseDAO.mysqlInstance().deleteById(MysqlMetadata.class, metadata.getId());
+                        BaseDAO.mysqlInstance().deleteById(MysqlColumn.class, metadata.getId());
                     }
                 }
                 // 被删除列位置之后的列往前移动一位
                 if(ordinalPosition != null) {
-                    for (MysqlMetadata metadata: fieldMetadataList) {
+                    for (MysqlColumn metadata: fieldMetadataList) {
                         if(metadata.getOrdinalPosition() > ordinalPosition) {
                             metadata.setOrdinalPosition(metadata.getOrdinalPosition() - 1L);
                             // todo 后续优化，批量更新

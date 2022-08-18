@@ -2,6 +2,7 @@ package yanyu.xmz.recorder.business.entity.metadata;
 
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
+import yanyu.xmz.recorder.business.dao.annotation.TableField;
 
 import java.util.Date;
 
@@ -16,6 +17,7 @@ public class MysqlColumn {
     @Id
     private Long id;
 
+    private String tableCatalog;
     private String tableSchema;
     private String tableName;
     private String columnName;
@@ -27,8 +29,17 @@ public class MysqlColumn {
     private Long characterOctetLength;
     private Long numericPrecision;
     private Long numericScale;
+    private Long datetimePrecision;
     private String characterSetName;
     private String collationName;
+    @TableField(type = "longtext NOT NULL")
+    private String columnType;
+    private String columnKey;
+    private String extra;
+    private String privileges;
+    private String columnComment;
+    private String generationExpression;
+
 
     @DateAuto
     private Date createTime;
@@ -36,12 +47,21 @@ public class MysqlColumn {
     @DateAuto("update")
     private Date updateTime;
 
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getTableCatalog() {
+        return tableCatalog;
+    }
+
+    public void setTableCatalog(String tableCatalog) {
+        this.tableCatalog = tableCatalog;
     }
 
     public String getTableSchema() {
@@ -132,6 +152,14 @@ public class MysqlColumn {
         this.numericScale = numericScale;
     }
 
+    public Long getDatetimePrecision() {
+        return datetimePrecision;
+    }
+
+    public void setDatetimePrecision(Long datetimePrecision) {
+        this.datetimePrecision = datetimePrecision;
+    }
+
     public String getCharacterSetName() {
         return characterSetName;
     }
@@ -146,6 +174,54 @@ public class MysqlColumn {
 
     public void setCollationName(String collationName) {
         this.collationName = collationName;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
+    }
+
+    public String getColumnKey() {
+        return columnKey;
+    }
+
+    public void setColumnKey(String columnKey) {
+        this.columnKey = columnKey;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
+    }
+
+    public String getPrivileges() {
+        return privileges;
+    }
+
+    public void setPrivileges(String privileges) {
+        this.privileges = privileges;
+    }
+
+    public String getColumnComment() {
+        return columnComment;
+    }
+
+    public void setColumnComment(String columnComment) {
+        this.columnComment = columnComment;
+    }
+
+    public String getGenerationExpression() {
+        return generationExpression;
+    }
+
+    public void setGenerationExpression(String generationExpression) {
+        this.generationExpression = generationExpression;
     }
 
     public Date getCreateTime() {
@@ -166,8 +242,9 @@ public class MysqlColumn {
 
     @Override
     public String toString() {
-        return "MysqlMetadata{" +
+        return "MysqlColumn{" +
                 "id=" + id +
+                ", tableCatalog='" + tableCatalog + '\'' +
                 ", tableSchema='" + tableSchema + '\'' +
                 ", tableName='" + tableName + '\'' +
                 ", columnName='" + columnName + '\'' +
@@ -179,8 +256,15 @@ public class MysqlColumn {
                 ", characterOctetLength=" + characterOctetLength +
                 ", numericPrecision=" + numericPrecision +
                 ", numericScale=" + numericScale +
+                ", datetimePrecision=" + datetimePrecision +
                 ", characterSetName='" + characterSetName + '\'' +
                 ", collationName='" + collationName + '\'' +
+                ", columnType='" + columnType + '\'' +
+                ", columnKey='" + columnKey + '\'' +
+                ", extra='" + extra + '\'' +
+                ", privileges='" + privileges + '\'' +
+                ", columnComment='" + columnComment + '\'' +
+                ", generationExpression='" + generationExpression + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 '}';

@@ -9,7 +9,6 @@ import yanyu.xmz.recorder.business.handler.factory.HandlerFactory;
 import yanyu.xmz.recorder.test.MyBinaryLogClient;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * @author xiaomingzhang
@@ -53,7 +52,7 @@ public class BinLogListener {
 
          // 固定位置读取
         client.setBinlogFilename("mysql-bin.000001");
-        client.setBinlogPosition(429220L);
+        //client.setBinlogPosition(429220L);
         client.setBinlogPosition(4L);
 
         // 注册
@@ -83,11 +82,11 @@ public class BinLogListener {
     }
 
     private static void dropTables() {
-        BaseDAO.mysqlInstance().dropTable(EventRecord.class);
-        BaseDAO.mysqlInstance().dropTable(UpdateRowRecord.class);
-        BaseDAO.mysqlInstance().dropTable(DeleteRowRecord.class);
-        BaseDAO.mysqlInstance().dropTable(InsertRowRecord.class);
-        BaseDAO.mysqlInstance().dropTable(QueryEventRecord.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(EventRecord.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(UpdateRowRecord.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(DeleteRowRecord.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(InsertRowRecord.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(QueryEventRecord.class);
     }
 
     private static EventRecord getLastRecord(){

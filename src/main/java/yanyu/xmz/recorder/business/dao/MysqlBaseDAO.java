@@ -351,16 +351,27 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     @Override
-    public <T> void dropTable(Class<T> entity) {
+    public <T> void dropTableIfExist(Class<T> entity) {
         String tableName = getTableName(entity);
-        // 执行sql
-        exec("drop table " + tableName);
-        log.info("删除表{}成功", tableName);
+        if (isExistTable(entity)) {
+            exec("drop table " + tableName);
+        } else {
+            log.info("表{}不存在,无需执行删除语句", getTableName(entity));
+        }
+
     }
 
     @Override
     public <T> void createTableIfNotExist(Class<T> entity) {
+        // 如果表不存在，则创建表
+        if (!isExistTable(entity)) {
+            createTable(entity);
+        } else {
+            log.info("表{}已存在,无需执行建表语句", getTableName(entity));
+        }
+    }
 
+    private boolean isExistTable(Class<?> entity) {
         Connection connection = ConnectionManagerUtil.getConnection();
         try {
             String schema = ((ConnectionImpl) connection).getDatabase();
@@ -370,16 +381,14 @@ public class MysqlBaseDAO implements BaseDAO {
             log.debug("执行sql==> {}", querySql);
             Long resultNum = getOne(querySql, Long.class);
             log.debug("结果==> {}", resultNum);
-            // 如果表不存在，则创建表
-            if (resultNum == 0L) {
-                createTable(entity);
-            } else {
-                log.info("表{}已存在,无需执行建表语句", tableName);
-            }
+            return resultNum != 0L;
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+        return false;
     }
+
+
 
     private boolean exec(String sql) {
         try (Connection conn = ConnectionManagerUtil.getConnection();

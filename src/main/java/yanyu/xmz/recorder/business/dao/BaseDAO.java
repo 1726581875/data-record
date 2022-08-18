@@ -91,7 +91,7 @@ public interface BaseDAO {
      * @param entity
      * @param <T>
      */
-    <T> void dropTable(Class<T> entity);
+    <T> void dropTableIfExist(Class<T> entity);
 
     /**
      * 创建表

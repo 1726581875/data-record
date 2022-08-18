@@ -58,10 +58,20 @@ public class ConnectUtil {
 
 
     public final static class Config {
-        String url;
-        String username;
-        String password;
-        String driver;
+
+        private final String URL_TEMPLATE = "jdbc:mysql://%s:%s/%s?characterEncoding=UTF-8&serverTimezone=GMT%%2B8";
+
+        private String url;
+        private String username;
+        private String password;
+        private String driver;
+
+        public Config(String hostName, int port, String databaseName, String username, String password) {
+            this.url = String.format(URL_TEMPLATE, hostName, port, databaseName);
+            this.username = username;
+            this.password = password;
+            this.driver = MYSQL_DRIVER;
+        }
 
         public Config(String url, String username, String password, String driver) {
             this.url = url;

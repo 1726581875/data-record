@@ -3,6 +3,8 @@ package yanyu.xmz.recorder;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.util.ConnectUtil;
 import yanyu.xmz.recorder.business.entity.metadata.MysqlColumn;
+import yanyu.xmz.recorder.business.entity.metadata.MysqlSchemata;
+import yanyu.xmz.recorder.business.entity.metadata.MysqlTable;
 import yanyu.xmz.recorder.test.BaseTest;
 
 import java.util.List;
@@ -20,18 +22,36 @@ public class MetadataTest extends BaseTest {
         ConnectUtil.Config config = ConnectUtil.getConfig();
 
 
-        String url = "jdbc:mysql://"+ hostname +":"+ port+"/mooc?characterEncoding=UTF-8&serverTimezone=GMT%2B8";
-        ConnectUtil.setConfig(new ConnectUtil.Config(url,username,password,ConnectUtil.MYSQL_DRIVER));
+        ConnectUtil.setConfig(new ConnectUtil.Config(hostname,port, "INFORMATION_SCHEMA", username,password));
 
-        List<MysqlColumn> mysqlMetadataList = BaseDAO.mysqlInstance()
+        // 查询数据库List
+        List<MysqlSchemata> mysqlSchemataList = BaseDAO.mysqlInstance()
+                .getList("select * from INFORMATION_SCHEMA.SCHEMATA", MysqlSchemata.class);
+        // 查询表List
+        List<MysqlTable> mysqlTableList = BaseDAO.mysqlInstance()
+                .getList("select * from INFORMATION_SCHEMA.TABLES", MysqlTable.class);
+        // 查询列字段List
+        List<MysqlColumn> mysqlColumnList = BaseDAO.mysqlInstance()
                 .getList("select * from INFORMATION_SCHEMA.COLUMNS", MysqlColumn.class);
 
 
+
+        // 切换回local连接
         ConnectUtil.setConfig(config);
-        BaseDAO.mysqlInstance().dropTable(MysqlColumn.class);
+
+
+
+        BaseDAO.mysqlInstance().dropTableIfExist(MysqlSchemata.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(MysqlTable.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(MysqlColumn.class);
+
+        BaseDAO.mysqlInstance().createTableIfNotExist(MysqlSchemata.class);
+        BaseDAO.mysqlInstance().createTableIfNotExist(MysqlTable.class);
         BaseDAO.mysqlInstance().createTableIfNotExist(MysqlColumn.class);
 
-        BaseDAO.mysqlInstance().batchInsert(mysqlMetadataList);
+        BaseDAO.mysqlInstance().batchInsert(mysqlSchemataList);
+        BaseDAO.mysqlInstance().batchInsert(mysqlTableList);
+        BaseDAO.mysqlInstance().batchInsert(mysqlColumnList);
 
 
     }

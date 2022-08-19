@@ -17,27 +17,41 @@ public class MysqlColumn {
     @Id
     private Long id;
 
+    @TableField(type = "varchar(512) NOT NULL DEFAULT ''")
     private String tableCatalog;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String tableSchema;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String tableName;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String columnName;
     private Long ordinalPosition;
+    @TableField(type = "longtext")
     private String columnDefault;
+    @TableField(type = "varchar(3) NOT NULL DEFAULT ''")
     private String isNullable;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String dataType;
     private Long characterMaximumLength;
     private Long characterOctetLength;
     private Long numericPrecision;
     private Long numericScale;
     private Long datetimePrecision;
+    @TableField(type = "varchar(32) DEFAULT NULL")
     private String characterSetName;
+    @TableField(type = "varchar(32) DEFAULT NULL")
     private String collationName;
     @TableField(type = "longtext NOT NULL")
     private String columnType;
+    @TableField(type = "varchar(3) NOT NULL DEFAULT ''")
     private String columnKey;
+    @TableField(type = "varchar(30) NOT NULL DEFAULT ''")
     private String extra;
+    @TableField(type = "varchar(80) NOT NULL DEFAULT ''")
     private String privileges;
+    @TableField(type = "varchar(1024) NOT NULL DEFAULT ''")
     private String columnComment;
+    @TableField(type = "longtext NOT NULL")
     private String generationExpression;
 
 

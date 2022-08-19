@@ -2,6 +2,7 @@ package yanyu.xmz.recorder.business.entity.metadata;
 
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
+import yanyu.xmz.recorder.business.dao.annotation.TableField;
 
 import java.util.Date;
 
@@ -15,12 +16,18 @@ public class MysqlTable {
     @Id
     private Long id;
 
+    @TableField(type = "varchar(512) NOT NULL DEFAULT ''")
     private String tableCatalog;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String tableSchema;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String tableName;
+    @TableField(type = "varchar(64) NOT NULL DEFAULT ''")
     private String tableType;
+    @TableField(type = "varchar(64) DEFAULT NULL")
     private String engine;
     private Long version;
+    @TableField(type = "varchar(10) DEFAULT NULL")
     private String rowFormat;
     private Long tableRows;
     private Long avgRowLength;
@@ -32,9 +39,12 @@ public class MysqlTable {
     private Date createTime;
     private Date updateTime;
     private Date checkTime;
+    @TableField(type = "varchar(32) DEFAULT NULL")
     private String tableCollation;
     private Long checksum;
+    @TableField(type = "varchar(255) DEFAULT NULL")
     private String createOptions;
+    @TableField(type = "varchar(2048) NOT NULL DEFAULT ''")
     private String tableComment;
 
     @DateAuto

@@ -73,7 +73,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
     protected void initMetadataCache() {
         synchronized (AbstractMysqlEventHandler.class) {
 
-            List<MysqlColumn> metadataList = BaseDAO.mysqlInstance().getList("select * from mysql_metadata", MysqlColumn.class);
+            List<MysqlColumn> metadataList = BaseDAO.mysqlInstance().getList("select * from mysql_column", MysqlColumn.class);
             if(metadataList == null || metadataList.size() == 0){
                 return;
             }

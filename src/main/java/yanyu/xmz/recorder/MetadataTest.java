@@ -3,7 +3,7 @@ package yanyu.xmz.recorder;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.util.ConnectUtil;
 import yanyu.xmz.recorder.business.entity.metadata.MysqlColumn;
-import yanyu.xmz.recorder.business.entity.metadata.MysqlSchemata;
+import yanyu.xmz.recorder.business.entity.metadata.MysqlSchema;
 import yanyu.xmz.recorder.business.entity.metadata.MysqlTable;
 import yanyu.xmz.recorder.test.BaseTest;
 
@@ -25,8 +25,8 @@ public class MetadataTest extends BaseTest {
         ConnectUtil.setConfig(new ConnectUtil.Config(hostname,port, "INFORMATION_SCHEMA", username,password));
 
         // 查询数据库List
-        List<MysqlSchemata> mysqlSchemataList = BaseDAO.mysqlInstance()
-                .getList("select * from INFORMATION_SCHEMA.SCHEMATA", MysqlSchemata.class);
+        List<MysqlSchema> mysqlSchemataList = BaseDAO.mysqlInstance()
+                .getList("select * from INFORMATION_SCHEMA.SCHEMATA", MysqlSchema.class);
         // 查询表List
         List<MysqlTable> mysqlTableList = BaseDAO.mysqlInstance()
                 .getList("select * from INFORMATION_SCHEMA.TABLES", MysqlTable.class);
@@ -41,11 +41,11 @@ public class MetadataTest extends BaseTest {
 
 
 
-        BaseDAO.mysqlInstance().dropTableIfExist(MysqlSchemata.class);
+        BaseDAO.mysqlInstance().dropTableIfExist(MysqlSchema.class);
         BaseDAO.mysqlInstance().dropTableIfExist(MysqlTable.class);
         BaseDAO.mysqlInstance().dropTableIfExist(MysqlColumn.class);
 
-        BaseDAO.mysqlInstance().createTableIfNotExist(MysqlSchemata.class);
+        BaseDAO.mysqlInstance().createTableIfNotExist(MysqlSchema.class);
         BaseDAO.mysqlInstance().createTableIfNotExist(MysqlTable.class);
         BaseDAO.mysqlInstance().createTableIfNotExist(MysqlColumn.class);
 

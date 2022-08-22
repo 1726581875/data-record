@@ -10,7 +10,7 @@ import java.util.Date;
  * @author xiaomingzhang
  * @date 2022/8/18
  */
-public class MysqlSchemata {
+public class MysqlSchema {
 
     @Id
     private Long id;

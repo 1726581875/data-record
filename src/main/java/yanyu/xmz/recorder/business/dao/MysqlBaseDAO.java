@@ -46,13 +46,25 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     @Override
-    public <T> List<T> getList(String sql, Class<T> type) {
+    public <T> List<T> getList(String sql, Class<T> returnType) {
+        return getList(sql, returnType, null);
+    }
+
+    @Override
+    public <T> List<T> getList(String sql, Class<T> returnType, Object... params) {
         List<T> resultList = new ArrayList<>();
         try (Connection connection = ConnectionManagerUtil.getConnection();
-             PreparedStatement prepareStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = prepareStatement.executeQuery()) {
+             PreparedStatement prepareStatement = connection.prepareStatement(sql)) {
+            log.info("待执行SQL=>{}",sql);
+            if(params != null && params.length > 0) {
+                for (int i = 1; i <= params.length; i++) {
+                    log.info("参数{}=>{}",i, params[i-1]);
+                    prepareStatement.setObject(i, params[i-1]);
+                }
+            }
+            ResultSet resultSet = prepareStatement.executeQuery();
             while (resultSet.next()) {
-                resultList.add(analyzeResult(resultSet, type));
+                resultList.add(analyzeResult(resultSet, returnType));
             }
             return resultList;
         } catch (Exception e) {
@@ -115,7 +127,12 @@ public class MysqlBaseDAO implements BaseDAO {
 
     @Override
     public <T> T getOne(String sql, Class<T> type) {
-        List<T> resultList = getList(sql, type);
+        return getOne(sql, type, null);
+    }
+
+    @Override
+    public <T> T getOne(String sql, Class<T> returnType, Object... params) {
+        List<T> resultList = getList(sql, returnType, params);
         if (resultList.size() == 0) {
             return null;
         }

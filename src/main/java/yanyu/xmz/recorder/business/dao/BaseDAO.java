@@ -11,21 +11,41 @@ public interface BaseDAO {
 
     /**
      * 获取查询数据结果列表
+     * sql注入风险
      * @param sql
-     * @param type
+     * @param returnType
      * @param <T>
      * @return
      */
-    <T> List<T> getList(String sql, Class<T> type);
+    <T> List<T> getList(String sql, Class<T> returnType);
 
     /**
-     * 获取查询结果
-     * @param sql
-     * @param type
+     * 获取数据列表
+     * @param sql 预编译sql
+     * @param returnType 返回类型
+     * @param params
      * @param <T>
      * @return
      */
-    <T> T getOne(String sql, Class<T> type);
+    <T> List<T> getList(String sql, Class<T> returnType, Object ... params);
+
+    /**
+     * 获取一条记录
+     * @param sql
+     * @param returnType
+     * @param <T>
+     * @return
+     */
+    <T> T getOne(String sql, Class<T> returnType);
+
+    /**
+     * 获取一条记录
+     * @param sql
+     * @param returnType
+     * @param <T>
+     * @return
+     */
+    <T> T getOne(String sql, Class<T> returnType, Object ... params);
 
     /**
      * 插入单条数据

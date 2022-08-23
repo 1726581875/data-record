@@ -246,4 +246,34 @@ public class MysqlTable {
     public void setDataUpdateTime(Date dataUpdateTime) {
         this.dataUpdateTime = dataUpdateTime;
     }
+
+    @Override
+    public String toString() {
+        return "MysqlTable{" +
+                "id=" + id +
+                ", tableCatalog='" + tableCatalog + '\'' +
+                ", tableSchema='" + tableSchema + '\'' +
+                ", tableName='" + tableName + '\'' +
+                ", tableType='" + tableType + '\'' +
+                ", engine='" + engine + '\'' +
+                ", version=" + version +
+                ", rowFormat='" + rowFormat + '\'' +
+                ", tableRows=" + tableRows +
+                ", avgRowLength=" + avgRowLength +
+                ", dataLength=" + dataLength +
+                ", maxDataLength=" + maxDataLength +
+                ", indexLength=" + indexLength +
+                ", dataFree=" + dataFree +
+                ", autoIncrement=" + autoIncrement +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", checkTime=" + checkTime +
+                ", tableCollation='" + tableCollation + '\'' +
+                ", checksum=" + checksum +
+                ", createOptions='" + createOptions + '\'' +
+                ", tableComment='" + tableComment + '\'' +
+                ", dataCreateTime=" + dataCreateTime +
+                ", dataUpdateTime=" + dataUpdateTime +
+                '}';
+    }
 }

@@ -52,6 +52,11 @@ public class MysqlBaseDAO implements BaseDAO {
 
     @Override
     public <T> List<T> getList(String sql, Class<T> returnType, Object... params) {
+
+        if (returnType == null) {
+            throw new IllegalArgumentException("getList方法参数returnType不能为空");
+        }
+
         List<T> resultList = new ArrayList<>();
         try (Connection connection = ConnectionManagerUtil.getConnection();
              PreparedStatement prepareStatement = connection.prepareStatement(sql)) {
@@ -74,19 +79,29 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-    private <T> T analyzeResult(ResultSet resultSet, Class<T> type) throws Exception {
-        if (isMappingSupportType(type)) {
+    private <T> T analyzeResult(ResultSet resultSet, Class<T> returnType) throws Exception {
+        // 返回类型是基础类型，可以直接映射
+        if (isMappingSupportType(returnType)) {
             return (T) resultSet.getObject(1);
+        // 返回类型如果是Map类型， 解析结果集到Map返回
+        } else if(Map.class.equals(returnType)) {
+            Map<String,Object> resultMap = new HashMap<>();
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                resultMap.put(metaData.getColumnLabel(i), resultSet.getObject(i));
+            }
+            return (T) resultMap;
+        // 其他对象类型，解析对象字段，并赋值返回
         } else {
-            T resultInstance = type.getConstructor().newInstance();
-            Field[] declaredFields = type.getDeclaredFields();
+            T resultInstance = returnType.getConstructor().newInstance();
+            Field[] declaredFields = returnType.getDeclaredFields();
             Set<String> tableColumnNameSet = getTableColumnNameSet(resultSet);
             for (Field field : declaredFields) {
                 if (isMappingSupportType(field.getType())) {
                     // java列名转数据库命名规则，按驼峰对应“_”规则转换
                     String fieldName = NameConvertUtil.toDbRule(field.getName());
                     // 字段匹配，存在的列才获取结果并赋值,不存在的列则不做处理保持为null
-                    if (tableColumnNameSet.contains(fieldName)) {
+                    if (tableColumnNameSet.contains(fieldName.toLowerCase())) {
                         Object value = null;
                         if(field.getType() == Long.class){
                             value = resultSet.getLong(fieldName);
@@ -559,7 +574,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     /**
-     * 获取数据库支持的映射类型
+     * 是否是可以直接映射的类型
      *
      * @param clazz
      * @return

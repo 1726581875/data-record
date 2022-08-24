@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * @author xmz
@@ -24,15 +25,19 @@ public class ConnectUtil {
     private static final Map<String, Config> dataSourceMap = new HashMap<>();
 
     static {
+        // 本机mysql连接配置
         Config local = new Config(PropertiesReaderUtil.get("mysql.url"),
                 PropertiesReaderUtil.get("mysql.username"),
                 PropertiesReaderUtil.get("mysql.password"),
                 PropertiesReaderUtil.get("mysql.driver"));
 
-        Config monitor = new Config(PropertiesReaderUtil.get("mysql.url"),
-                PropertiesReaderUtil.get("mysql.username"),
-                PropertiesReaderUtil.get("mysql.password"),
-                PropertiesReaderUtil.get("mysql.driver"));
+        // 被监听远程mysql连接配置
+        String hostname = PropertiesReaderUtil.get("mysql.monitor.hostname");
+        Integer port = Integer.valueOf(PropertiesReaderUtil.get("mysql.monitor.port"));
+        String username = PropertiesReaderUtil.get("mysql.monitor.username");
+        String password = PropertiesReaderUtil.get("mysql.monitor.password");
+        String schema = PropertiesReaderUtil.get("mysql.monitor.schema");
+        Config monitor = new ConnectUtil.Config(hostname,port, schema, username,password);
         config = local;
         dataSourceMap.put("local", local);
         dataSourceMap.put("monitor", monitor);
@@ -60,6 +65,14 @@ public class ConnectUtil {
 
     public synchronized static void setConfig(Config connConfig){
         config = connConfig;
+    }
+
+    public synchronized static void changeDataSource(String dataSourceName){
+        Config config = dataSourceMap.get(dataSourceName);
+        if(config == null) {
+            throw new NoSuchElementException("获取不到数据源,name:" + dataSourceName);
+        }
+        setConfig(config);
     }
 
     public static Config getConfig(){

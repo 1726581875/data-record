@@ -25,11 +25,15 @@ public class BinLogListener {
 
     private static final String password;
 
+    private static final String schema;
+
     static {
         hostname = PropertiesReaderUtil.get("mysql.monitor.hostname");
         port = Integer.valueOf(PropertiesReaderUtil.get("mysql.monitor.port"));
         username = PropertiesReaderUtil.get("mysql.monitor.username");
         password = PropertiesReaderUtil.get("mysql.monitor.password");
+        schema = PropertiesReaderUtil.get("mysql.monitor.schema");
+
     }
 
 
@@ -41,7 +45,7 @@ public class BinLogListener {
         // 初始化表
         initTable();
 
-        MyBinaryLogClient client = new MyBinaryLogClient(hostname, port,username, password);
+        MyBinaryLogClient client = new MyBinaryLogClient(hostname, port, schema, username, password);
 
         // 查询最新一条记录的binlog位置
 /*        EventRecord lastRecord = getLastRecord();

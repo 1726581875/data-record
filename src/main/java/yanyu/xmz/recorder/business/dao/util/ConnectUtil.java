@@ -2,6 +2,8 @@ package yanyu.xmz.recorder.business.dao.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author xmz
@@ -19,13 +21,21 @@ public class ConnectUtil {
      */
     public static final String DM_DRIVER = "dm.jdbc.driver.DmDriver";
 
+    private static final Map<String, Config> dataSourceMap = new HashMap<>();
+
     static {
-        // 获取到xml文件里配置的连接参数
-        String url = PropertiesReaderUtil.get("mysql.url");
-        String username = PropertiesReaderUtil.get("mysql.username");
-        String password = PropertiesReaderUtil.get("mysql.password");
-        String driver = PropertiesReaderUtil.get("mysql.driver");
-        config = new Config(url, username, password, driver);
+        Config local = new Config(PropertiesReaderUtil.get("mysql.url"),
+                PropertiesReaderUtil.get("mysql.username"),
+                PropertiesReaderUtil.get("mysql.password"),
+                PropertiesReaderUtil.get("mysql.driver"));
+
+        Config monitor = new Config(PropertiesReaderUtil.get("mysql.url"),
+                PropertiesReaderUtil.get("mysql.username"),
+                PropertiesReaderUtil.get("mysql.password"),
+                PropertiesReaderUtil.get("mysql.driver"));
+        config = local;
+        dataSourceMap.put("local", local);
+        dataSourceMap.put("monitor", monitor);
     }
 
     /**

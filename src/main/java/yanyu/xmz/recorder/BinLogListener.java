@@ -26,10 +26,10 @@ public class BinLogListener {
     private static final String password;
 
     static {
-        hostname = PropertiesReaderUtil.get("mysql.listener.hostname");
-        port = Integer.valueOf(PropertiesReaderUtil.get("mysql.listener.port"));
-        username = PropertiesReaderUtil.get("mysql.listener.username");
-        password = PropertiesReaderUtil.get("mysql.listener.password");
+        hostname = PropertiesReaderUtil.get("mysql.monitor.hostname");
+        port = Integer.valueOf(PropertiesReaderUtil.get("mysql.monitor.port"));
+        username = PropertiesReaderUtil.get("mysql.monitor.username");
+        password = PropertiesReaderUtil.get("mysql.monitor.password");
     }
 
 

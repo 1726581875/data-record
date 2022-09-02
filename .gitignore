@@ -34,4 +34,4 @@ build/
 .DS_Store
 Thumbs.db
 
-*.properties
+src/main/resources/config.properties

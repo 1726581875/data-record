@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
-import yanyu.xmz.recorder.business.entity.EventRecord;
+import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.entity.metadata.MysqlColumn;
 import yanyu.xmz.recorder.business.enums.StateEnum;
 import yanyu.xmz.recorder.business.enums.StepEnum;

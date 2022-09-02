@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.business.entity;
+package yanyu.xmz.recorder.business.entity.event;
 
 /**
  * @author xiaomingzhang

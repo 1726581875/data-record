@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.business.entity;
+package yanyu.xmz.recorder.business.entity.event;
 
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;

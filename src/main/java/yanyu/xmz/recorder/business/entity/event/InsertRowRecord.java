@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.business.entity;
+package yanyu.xmz.recorder.business.entity.event;
 
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
@@ -9,9 +9,9 @@ import java.util.Date;
 /**
  * @author xiaomingzhang
  * @date 2022/6/14
- * 删除行记录表
+ * 新增行记录表
  */
-public class DeleteRowRecord {
+public class InsertRowRecord {
 
     @Id
     private Long id;
@@ -27,10 +27,10 @@ public class DeleteRowRecord {
     @DateAuto("update")
     private Date updateTime;
 
-    public DeleteRowRecord() {
+    public InsertRowRecord() {
     }
 
-    public DeleteRowRecord(Long recordId, String row) {
+    public InsertRowRecord(Long recordId, String row) {
         this.recordId = recordId;
         this.row = row;
     }
@@ -74,5 +74,4 @@ public class DeleteRowRecord {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
-
 }

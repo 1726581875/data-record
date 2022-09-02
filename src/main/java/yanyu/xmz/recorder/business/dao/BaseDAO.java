@@ -83,7 +83,7 @@ public interface BaseDAO {
     <T> int batchInsert(List<T> objectList);
 
 
-    int batchInsert(String tableName, List<Map<String,Object>> columnValueMap) throws SQLException;
+    <T> int batchInsert(String tableName, List<T> columnValueMap);
 
     /**
      * 批量删除

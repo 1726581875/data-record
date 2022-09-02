@@ -3,7 +3,7 @@ package yanyu.xmz.recorder.business.handler;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
-import yanyu.xmz.recorder.business.entity.EventRecord;
+import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.enums.StepEnum;
 
 /**

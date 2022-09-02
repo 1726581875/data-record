@@ -350,7 +350,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     @Override
-    public int batchInsert(String tableName, List<Map<String,Object>> rowMapList) throws SQLException {
+    public <T> int batchInsert(String tableName, List<T> rowMapList) {
         if (rowMapList == null || rowMapList.isEmpty()) {
             log.warn("插入元素为空, 请检查参数");
             return 0;
@@ -379,6 +379,7 @@ public class MysqlBaseDAO implements BaseDAO {
                 List<String> columnNameList = getColumnNameList(rowObj);
                 // 获取插入语句预编译sql
                 String insertSql = getInsertPrepareSQL(columnNameList, tableName);
+                log.debug("预编译sql={}",insertSql);
                 statement = conn.prepareStatement(insertSql);
                 // 设置参数并执行语句
                 successRow += execInsert(statement, columnNameList, rowObj);

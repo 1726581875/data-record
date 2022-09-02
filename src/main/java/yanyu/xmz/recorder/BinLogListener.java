@@ -1,7 +1,7 @@
 package yanyu.xmz.recorder;
 
 import com.github.shyiko.mysql.binlog.event.EventHeader;
-import yanyu.xmz.recorder.business.entity.*;
+import yanyu.xmz.recorder.business.entity.event.*;
 import yanyu.xmz.recorder.business.handler.DbEventHandler;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;

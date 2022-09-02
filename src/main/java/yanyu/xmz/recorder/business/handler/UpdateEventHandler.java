@@ -4,8 +4,8 @@ import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
 import com.google.gson.Gson;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
-import yanyu.xmz.recorder.business.entity.EventRecord;
-import yanyu.xmz.recorder.business.entity.UpdateRowRecord;
+import yanyu.xmz.recorder.business.entity.event.EventRecord;
+import yanyu.xmz.recorder.business.entity.event.UpdateRowRecord;
 import yanyu.xmz.recorder.business.enums.StepEnum;
 
 import java.io.Serializable;

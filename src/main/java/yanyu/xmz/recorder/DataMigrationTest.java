@@ -13,22 +13,40 @@ import java.util.Map;
 public class DataMigrationTest {
 
     public static void main(String[] args) {
-/*        ConnectUtil.changeDataSource("monitor");
-        Map<String,Object> resultMap = BaseDAO.mysqlInstance().getOne("show create table mooc.course", Map.class);
-
-        resultMap.forEach((k,v) -> System.out.println("key=" + k + ",v=" + v));
-
-        ConnectUtil.changeDataSource("local");
-        BaseDAO.mysqlInstance().exec((String) resultMap.get("Create Table"));*/
-
 
         ConnectUtil.changeDataSource("monitor");
+        List<String> tableNameList = BaseDAO.mysqlInstance().getList("show tables", String.class);
 
+        if(tableNameList == null || tableNameList.size() == 0){
+            System.out.println("该数据库下没有表，结束");
+            return;
+        }
 
-        List<Map> resultMapList = BaseDAO.mysqlInstance().getList("select * from mooc.course limit 10", Map.class);
-        for (Map<String,Object> rowMap : resultMapList){
-            rowMap.forEach((k,v) -> System.out.println(k + "=" + v));
-            System.out.println("===========");
+        for (String tableName : tableNameList) {
+            System.out.println("========= 表:" + tableName + " 开始 ==========");
+
+            ConnectUtil.changeDataSource("monitor");
+            // 获取远程mysql建表语句
+            Map<String,Object> resultMap = BaseDAO.mysqlInstance().getOne("show create table " + tableName, Map.class);
+
+            // 切换到本地数据库
+            ConnectUtil.changeDataSource("local");
+            // 本地若存在该表则先删除
+            BaseDAO.mysqlInstance().exec("DROP TABLE IF EXISTS `"+ tableName +"`");
+            // 本地新建该表
+            BaseDAO.mysqlInstance().exec((String) resultMap.get("Create Table"));
+
+            // 切换到远程mysql数据源
+            ConnectUtil.changeDataSource("monitor");
+            // 全量获取数据列表,todo 之后改为分批
+            List<Map> resultMapList = BaseDAO.mysqlInstance().getList("select * from " + tableName, Map.class);
+
+            // 切换到本地数据源
+            ConnectUtil.changeDataSource("local");
+            // 数据入库本地数据库
+            BaseDAO.mysqlInstance().batchInsert(tableName, resultMapList);
+
+            System.out.println("========= 表:" + tableName + " 结束 ==========");
         }
 
 

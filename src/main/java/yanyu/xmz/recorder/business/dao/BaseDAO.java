@@ -2,6 +2,7 @@ package yanyu.xmz.recorder.business.dao;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author xiaomingzhang
@@ -81,6 +82,9 @@ public interface BaseDAO {
      */
     <T> int batchInsert(List<T> objectList);
 
+
+    int batchInsert(String tableName, List<Map<String,Object>> columnValueMap) throws SQLException;
+
     /**
      * 批量删除
      * @param ids
@@ -120,6 +124,13 @@ public interface BaseDAO {
      */
     <T> void createTableIfNotExist(Class<T> entity);
 
+
+    /**
+     * 执行sql
+     * @param sql
+     * @return
+     */
+    boolean exec(String sql);
 
     /**
      * 获取一个实例

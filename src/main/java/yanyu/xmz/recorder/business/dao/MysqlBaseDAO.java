@@ -162,16 +162,16 @@ public class MysqlBaseDAO implements BaseDAO {
         if (obj == null) {
             throw new RuntimeException("插入元素为空, 请检查参数");
         }
-        String insertSql = getInsertPrepareSQL(obj);
-        //log.debug(insertSql);
+        String tableName = getTableName(obj);
+        List<String> columnNameList = getColumnNameList(obj);
+        String insertSql = getInsertPrepareSQL(columnNameList, tableName);
+
         try (Connection conn = ConnectionManagerUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(insertSql)) {
-            return execUpdate(statement, obj);
+            return execInsert(statement, columnNameList, obj);
         } catch (Exception e) {
             log.error("插入失败", e);
             throw new RuntimeException("数据库插入失败:" + e.getMessage());
-        } finally {
-            fieldDetailMapThreadLocal.remove();
         }
     }
 
@@ -180,11 +180,14 @@ public class MysqlBaseDAO implements BaseDAO {
         if (obj == null) {
             throw new RuntimeException("插入元素为空, 请检查参数");
         }
-        String insertSql = getInsertPrepareSQL(obj);
-        //log.debug(insertSql);
+
+        String tableName = getTableName(obj);
+        List<String> columnNameList = getColumnNameList(obj);
+        String insertSql = getInsertPrepareSQL(columnNameList, tableName);
+
         try (Connection conn = ConnectionManagerUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-            execUpdate(statement, obj);
+             execInsert(statement, columnNameList, obj);
             // 检索由于执行此 Statement 对象而创建的所有自动生成的键
             ResultSet rs = statement.getGeneratedKeys();
             if (rs.next()) {
@@ -196,10 +199,7 @@ public class MysqlBaseDAO implements BaseDAO {
         } catch (Exception e) {
             log.error("插入失败", e);
             throw new RuntimeException("数据库插入失败:" + e.getMessage());
-        } finally {
-            fieldDetailMapThreadLocal.remove();
         }
-
     }
 
     @Override
@@ -266,8 +266,13 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-    int execUpdate(PreparedStatement statement, Object obj) throws SQLException, IllegalAccessException {
+    private int execUpdate(PreparedStatement statement, Object obj) throws SQLException, IllegalAccessException {
         setParam(statement, obj);
+        return statement.executeUpdate();
+    }
+
+    private int execInsert(PreparedStatement statement, List<String> columnList, Object obj) throws SQLException, IllegalAccessException {
+        setInsertParam(statement,columnList, obj);
         return statement.executeUpdate();
     }
 
@@ -290,6 +295,46 @@ public class MysqlBaseDAO implements BaseDAO {
         }
     }
 
+    private void setInsertParam(PreparedStatement statement, List<String> columnList, Object object) throws SQLException, IllegalAccessException {
+
+        if (columnList == null || columnList.size() == 0) {
+            throw new IllegalArgumentException("columnList is null");
+        }
+
+        if (object == null) {
+            throw new IllegalArgumentException("object is null");
+        }
+
+        Map<String, Integer> columnIndexMap = new HashMap<>();
+        for (int i = 0; i < columnList.size(); i++) {
+            columnIndexMap.put(columnList.get(i), i + 1);
+        }
+
+        if (object instanceof Map) {
+            Map<String,Object> rowMap = (Map<String, Object>) object;
+            for (Map.Entry<String, Object> rowEntry : rowMap.entrySet()){
+                Integer columnIndex = columnIndexMap.get(rowEntry.getKey());
+                if(columnIndex != null) {
+                    statement.setObject(columnIndex, rowEntry.getValue());
+                }
+            }
+        } else {
+            Class<?> objectClass = object.getClass();
+            Field[] declaredFields = objectClass.getDeclaredFields();
+            for (Field field : declaredFields) {
+                String columnName = NameConvertUtil.toDbRule(field.getName());
+                Integer columnIndex = columnIndexMap.get(columnName);
+                if (columnIndex != null) {
+                    field.setAccessible(true);
+                    Object value = field.get(object);
+                    if (value != null) {
+                        statement.setObject(columnIndex, value);
+                    }
+                }
+            }
+        }
+    }
+
 
     @Override
     public <T> int batchInsert(List<T> objectList) {
@@ -298,24 +343,45 @@ public class MysqlBaseDAO implements BaseDAO {
             return 0;
         }
         try {
-            return batchInsertData(objectList);
+            return batchInsertData(null,objectList);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private <T> int batchInsertData(List<T> objectList) throws SQLException {
+    @Override
+    public int batchInsert(String tableName, List<Map<String,Object>> rowMapList) throws SQLException {
+        if (rowMapList == null || rowMapList.isEmpty()) {
+            log.warn("插入元素为空, 请检查参数");
+            return 0;
+        }
+        try {
+            return batchInsertData(tableName, rowMapList);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T> int batchInsertData(String tableName, List<T> objectList) throws SQLException {
         Connection conn = ConnectionManagerUtil.getConnection();
         PreparedStatement statement = null;
         int successRow = 0;
         try {
-            // 设置不自动提交事务
+            // 设置手动提交事务
             conn.setAutoCommit(false);
             Iterator<T> iterator = objectList.iterator();
             while (iterator.hasNext()) {
-                T obj = iterator.next();
-                statement = conn.prepareStatement(getInsertPrepareSQL(obj));
-                successRow += execUpdate(statement, obj);
+                T rowObj = iterator.next();
+                if (tableName == null) {
+                    tableName = getTableName(rowObj);
+                }
+                // 获取列字段
+                List<String> columnNameList = getColumnNameList(rowObj);
+                // 获取插入语句预编译sql
+                String insertSql = getInsertPrepareSQL(columnNameList, tableName);
+                statement = conn.prepareStatement(insertSql);
+                // 设置参数并执行语句
+                successRow += execInsert(statement, columnNameList, rowObj);
             }
             // 批量插入完成，提交事务
             conn.commit();
@@ -327,8 +393,6 @@ public class MysqlBaseDAO implements BaseDAO {
             log.error("批量插入发生异常，当前执行列表报错下标:{}", successRow + 1, e);
             throw new RuntimeException(e);
         } finally {
-            fieldDetailMapThreadLocal.remove();
-
             if (statement != null) {
                 statement.close();
             }
@@ -422,7 +486,8 @@ public class MysqlBaseDAO implements BaseDAO {
 
 
 
-    private boolean exec(String sql) {
+    @Override
+    public boolean exec(String sql) {
         try (Connection conn = ConnectionManagerUtil.getConnection();
              PreparedStatement statement = conn.prepareStatement(sql)) {
             return statement.execute();
@@ -534,6 +599,69 @@ public class MysqlBaseDAO implements BaseDAO {
         // 拼接预编译sql片段
         return String.format(INSERT_TEMPLATE, tableNameStr, columnStr, getPlaceholder(paramIndex - 1));
     }
+
+    private String getTableName(Object object) {
+
+        if(object == null) {
+            throw new IllegalArgumentException("getTableName发生异常,object为空");
+        }
+        List<String> columnList = null;
+        if (object instanceof String) {
+            return (String) object;
+        } else {
+            Class<?> objectClass = object.getClass();
+            return NameConvertUtil.toDbRule(objectClass.getSimpleName());
+        }
+    }
+
+    private  List<String> getColumnNameList(Object object) {
+
+        if(object == null) {
+            throw new IllegalArgumentException("getColumnNameList发生异常,object为空");
+        }
+
+        List<String> columnList = null;
+        if (object instanceof Map) {
+            Map<String, Object> columnMap = (Map<String, Object>) object;
+            columnList = new ArrayList<>(columnMap.keySet());
+        } else {
+            Class<?> objectClass = object.getClass();
+            Field[] fields = objectClass.getDeclaredFields();
+            columnList = new ArrayList<>(fields.length);
+            for (int i = 0; i < fields.length; i++) {
+                try {
+                    fields[i].setAccessible(true);
+                    if (fields[i].get(object) == null) {
+                        continue;
+                    }
+                } catch (IllegalAccessException e) {
+                    continue;
+                }
+                columnList.add(NameConvertUtil.toDbRule(fields[i].getName()));
+            }
+        }
+
+        return columnList;
+    }
+
+    private String getInsertPrepareSQL(List<String> columnNameList, String tableName) {
+
+        if(columnNameList == null || columnNameList.size() == 0){
+            throw new IllegalArgumentException("columnNameList is null");
+        }
+        if(tableName == null || tableName.length() == 0) {
+            throw new IllegalArgumentException("tableName is null");
+        }
+        List<String> columnStrList = new ArrayList<>(columnNameList.size());
+        for (int i = 0; i < columnNameList.size(); i++) {
+            columnStrList.add(NameConvertUtil.around(columnNameList.get(i), "`"));
+        }
+        String columnStr = columnStrList.stream().collect(Collectors.joining(","));
+        // 拼接预编译sql片段
+        return String.format(INSERT_TEMPLATE, tableName, columnStr, getPlaceholder(columnNameList.size()));
+    }
+
+
 
     private void recordFieldDetail(FieldDetail fieldDetail) {
         Map<String, FieldDetail> fieldDetailMap = fieldDetailMapThreadLocal.get();

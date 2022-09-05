@@ -38,9 +38,11 @@ public class ConnectUtil {
         String password = PropertiesReaderUtil.get("mysql.monitor.password");
         String schema = PropertiesReaderUtil.get("mysql.monitor.schema");
         Config monitor = new ConnectUtil.Config(hostname,port, schema, username,password);
+
+        // 默认为local配置
         config = local;
         dataSourceMap.put("local", local);
-        dataSourceMap.put("monitor", monitor);
+        dataSourceMap.put("dev", monitor);
     }
 
     /**
@@ -77,6 +79,14 @@ public class ConnectUtil {
 
     public static Config getConfig(){
        return config;
+    }
+
+    public static Config getConfig(String dataSourceName) {
+        Config config = dataSourceMap.get(dataSourceName);
+        if (config == null) {
+            throw new RuntimeException("数据源不存在,dataSourceName=" + dataSourceName);
+        }
+        return config;
     }
 
 

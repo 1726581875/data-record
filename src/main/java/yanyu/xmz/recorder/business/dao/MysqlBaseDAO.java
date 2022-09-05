@@ -7,6 +7,7 @@ import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
 import yanyu.xmz.recorder.business.dao.annotation.TableField;
 import yanyu.xmz.recorder.business.dao.obj.FieldDetail;
+import yanyu.xmz.recorder.business.dao.util.ConnectUtil;
 import yanyu.xmz.recorder.business.dao.util.ConnectionManagerUtil;
 import yanyu.xmz.recorder.business.dao.util.NameConvertUtil;
 
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
  * @date 2021/12/29
  */
 public class MysqlBaseDAO implements BaseDAO {
+
+    private ConnectUtil.Config config;
 
     private final static Set<Class<?>> supportTypeSet = new HashSet<>(Arrays.asList(String.class, Date.class));
 
@@ -45,6 +48,10 @@ public class MysqlBaseDAO implements BaseDAO {
 
     }
 
+    public MysqlBaseDAO(ConnectUtil.Config config){
+        this.config = config;
+    }
+
     @Override
     public <T> List<T> getList(String sql, Class<T> returnType) {
         return getList(sql, returnType, null);
@@ -58,7 +65,7 @@ public class MysqlBaseDAO implements BaseDAO {
         }
 
         List<T> resultList = new ArrayList<>();
-        try (Connection connection = ConnectionManagerUtil.getConnection();
+        try (Connection connection = ConnectionManagerUtil.getConnection(config);
              PreparedStatement prepareStatement = connection.prepareStatement(sql)) {
             log.info("待执行SQL=>{}",sql);
             if(params != null && params.length > 0) {
@@ -166,7 +173,7 @@ public class MysqlBaseDAO implements BaseDAO {
         List<String> columnNameList = getColumnNameList(obj);
         String insertSql = getInsertPrepareSQL(columnNameList, tableName);
 
-        try (Connection conn = ConnectionManagerUtil.getConnection();
+        try (Connection conn = ConnectionManagerUtil.getConnection(config);
              PreparedStatement statement = conn.prepareStatement(insertSql)) {
             return execInsert(statement, columnNameList, obj);
         } catch (Exception e) {
@@ -185,7 +192,7 @@ public class MysqlBaseDAO implements BaseDAO {
         List<String> columnNameList = getColumnNameList(obj);
         String insertSql = getInsertPrepareSQL(columnNameList, tableName);
 
-        try (Connection conn = ConnectionManagerUtil.getConnection();
+        try (Connection conn = ConnectionManagerUtil.getConnection(config);
              PreparedStatement statement = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
              execInsert(statement, columnNameList, obj);
             // 检索由于执行此 Statement 对象而创建的所有自动生成的键
@@ -209,7 +216,7 @@ public class MysqlBaseDAO implements BaseDAO {
         }
         String updatePrepareSQL = getUpdatePrepareSQL(obj);
         //log.debug(updatePrepareSQL);
-        try (Connection conn = ConnectionManagerUtil.getConnection();
+        try (Connection conn = ConnectionManagerUtil.getConnection(config);
              PreparedStatement statement = conn.prepareStatement(updatePrepareSQL)) {
             return execUpdate(statement, obj);
         } catch (Exception e) {
@@ -315,6 +322,7 @@ public class MysqlBaseDAO implements BaseDAO {
             for (Map.Entry<String, Object> rowEntry : rowMap.entrySet()){
                 Integer columnIndex = columnIndexMap.get(rowEntry.getKey());
                 if(columnIndex != null) {
+                    log.debug("参数{} ==> [{}]", columnIndex, rowEntry.getValue());
                     statement.setObject(columnIndex, rowEntry.getValue());
                 }
             }
@@ -328,6 +336,7 @@ public class MysqlBaseDAO implements BaseDAO {
                     field.setAccessible(true);
                     Object value = field.get(object);
                     if (value != null) {
+                        log.debug("参数{} ==> [{}]", columnIndex, value);
                         statement.setObject(columnIndex, value);
                     }
                 }
@@ -363,7 +372,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     private <T> int batchInsertData(String tableName, List<T> objectList) throws SQLException {
-        Connection conn = ConnectionManagerUtil.getConnection();
+        Connection conn = ConnectionManagerUtil.getConnection(config);
         PreparedStatement statement = null;
         int successRow = 0;
         try {
@@ -415,7 +424,7 @@ public class MysqlBaseDAO implements BaseDAO {
     public <T> boolean deleteById(Class<T> entity, Object id) {
         String sqlTemplate = "delete from %s where %s = ?";
         String preSql = String.format(sqlTemplate, getTableName(entity), getId(entity));
-        try (Connection conn = ConnectionManagerUtil.getConnection();
+        try (Connection conn = ConnectionManagerUtil.getConnection(config);
              PreparedStatement statement = conn.prepareStatement(preSql)) {
              statement.setObject(1, id);
              return statement.execute();
@@ -469,7 +478,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
     private boolean isExistTable(Class<?> entity) {
-        Connection connection = ConnectionManagerUtil.getConnection();
+        Connection connection = ConnectionManagerUtil.getConnection(config);
         try {
             String schema = ((ConnectionImpl) connection).getDatabase();
             String tableName = getTableName(entity);
@@ -489,7 +498,7 @@ public class MysqlBaseDAO implements BaseDAO {
 
     @Override
     public boolean exec(String sql) {
-        try (Connection conn = ConnectionManagerUtil.getConnection();
+        try (Connection conn = ConnectionManagerUtil.getConnection(config);
              PreparedStatement statement = conn.prepareStatement(sql)) {
             return statement.execute();
         } catch (Exception e) {

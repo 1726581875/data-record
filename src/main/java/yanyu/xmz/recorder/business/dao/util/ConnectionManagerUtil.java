@@ -33,6 +33,14 @@ public class ConnectionManagerUtil {
         return conn;
     }
 
+
+    public static Connection getConnection(ConnectUtil.Config config) {
+        if(config != null) {
+            return ConnectUtil.getConnection(config);
+        }
+        return getConnection();
+    }
+
     /**
      * 关闭连接
      */

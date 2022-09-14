@@ -1,0 +1,14 @@
+#配置服务端口
+server:
+  port: 8989
+#配置服务名
+spring:
+  #时间格式化
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+
+logging:
+  #config: classpath:logback-spring.xml
+  level:
+    com.xmz.datarecordapplication: debug
+    ROOT: INFO

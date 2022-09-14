@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder;
+package yanyu.xmz.recorder.test;
 
 import yanyu.xmz.recorder.business.dao.MysqlBaseDAO;
 import yanyu.xmz.recorder.business.dao.util.ConnectUtil;

@@ -33,5 +33,3 @@ build/
 # system ignore
 .DS_Store
 Thumbs.db
-
-src/main/resources/config.properties

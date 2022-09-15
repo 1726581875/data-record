@@ -2,6 +2,8 @@ package yanyu.xmz.recorder.business.service.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
@@ -25,18 +27,27 @@ public class DataMigrationServiceImpl implements DataMigrationService {
 
     private static final Logger log = LoggerFactory.getLogger(DataMigrationServiceImpl.class);
 
+
+    @Autowired
+    private ThreadPoolTaskExecutor dataMigrationThreadPoolExecutor;
+
     @Override
     public void doDataMigration(DataMigrationDTO dto) {
-        if (StringUtils.hasLength(dto.getSchemaName())) {
-            BaseDAO netBaseDAO = getBaseDAO(dto.getTenantId(), dto.getDataSourceId());
-            List<String> tableNameList = netBaseDAO.getList("show tables from `" + dto.getSchemaName() + "`", String.class);
-            syncTables(tableNameList, dto.getTenantId(), dto.getDataSourceId());
-        } else if (StringUtils.hasLength(dto.getTableName())) {
-            syncTables(Arrays.asList(dto.getTableName()), dto.getTenantId(), dto.getDataSourceId());
-        }
+        dataMigrationThreadPoolExecutor.execute(() -> {
+                    if (StringUtils.hasLength(dto.getTableName())) {
+                        syncTables(Arrays.asList(dto.getTableName()), dto.getTenantId(), dto.getDataSourceId());
+                    } else {
+                        SysDataSource dataSource = getDataSource(dto.getTenantId(), dto.getDataSourceId());
+                        BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
+                        List<String> tableNameList = netBaseDAO.getList("show tables from `" + dataSource.getSchemaName() + "`", String.class);
+                        syncTables(tableNameList, dto.getTenantId(), dto.getDataSourceId());
+                    }
+                }
+        );
     }
 
-    private BaseDAO getBaseDAO(String tenantId, Long dataSourceId) {
+
+    private SysDataSource getDataSource(String tenantId, Long dataSourceId) {
         BaseDAO baseDAO = BaseDAO.mysqlInstance();
         SysDataSource dataSource = baseDAO.getOne("select * from sys_data_source where tenant_id = ? and id = ?",
                 SysDataSource.class, tenantId, dataSourceId);
@@ -44,7 +55,7 @@ public class DataMigrationServiceImpl implements DataMigrationService {
         if(dataSource == null) {
             throw new RuntimeException("租户数据源不存在,tenantId=" + tenantId + ",dataSourceId=" + dataSourceId);
         }
-        return new MysqlBaseDAO(dataSource.getConfig());
+        return dataSource;
     }
 
 
@@ -56,12 +67,7 @@ public class DataMigrationServiceImpl implements DataMigrationService {
         }
 
         BaseDAO baseDAO = BaseDAO.mysqlInstance();
-        SysDataSource dataSource = baseDAO.getOne("select * from sys_data_source where tenant_id = ? and id = ?",
-                SysDataSource.class, tenantId, dataSourceId);
-
-        if(dataSource == null) {
-            throw new RuntimeException("租户数据源不存在,tenantId=" + tenantId + ",dataSourceId=" + dataSourceId);
-        }
+        SysDataSource dataSource = getDataSource(tenantId, dataSourceId);
 
         BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
         List<SysTenantTable> sysTenantTableList = new ArrayList<>(tableNameList.size());

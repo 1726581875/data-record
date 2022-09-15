@@ -10,8 +10,6 @@ public class DataMigrationDTO {
 
     private Long dataSourceId;
 
-    private String schemaName;
-
     private String tableName;
 
     public String getTenantId() {
@@ -30,13 +28,6 @@ public class DataMigrationDTO {
         this.dataSourceId = dataSourceId;
     }
 
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
 
     public String getTableName() {
         return tableName;
@@ -51,7 +42,6 @@ public class DataMigrationDTO {
         return "DaraMigrationDTO{" +
                 "tenantId='" + tenantId + '\'' +
                 ", dataSourceId=" + dataSourceId +
-                ", schemaName=" + schemaName +
                 ", tableName='" + tableName + '\'' +
                 '}';
     }

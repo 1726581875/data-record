@@ -1,3 +1,5 @@
+package yanyu.xmz.recorder.test;
+
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import yanyu.xmz.recorder.business.dao.BaseDAO;

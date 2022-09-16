@@ -81,18 +81,18 @@ public class DataMigrationServiceImpl implements DataMigrationService {
             String suffix = getSuffix(dataSourceId, tenantId);
             // 本地如果存在该表，则先删除
             String targetTableName = tableName + suffix;
-            baseDAO.exec("DROP TABLE IF EXISTS `"+ targetTableName  +"`");
-            // 如果存在租户和该表关系，也需要先删除
-            SysTenantTable sysTable = baseDAO.getOne("select * from sys_tenant_table where table_name=? and tenant_id=? and data_source_id=?",
-                    SysTenantTable.class, targetTableName, tenantId, dataSourceId);
-            if(sysTable != null){
-                baseDAO.deleteById(SysTenantTable.class, sysTable.getId());
-            }
 
-            // 执行同步程序
+            // 执行同步程序，同步数据到临时表
             MysqlDataMigration mysqlDataMigration = new MysqlDataMigration(netBaseDAO, baseDAO);
+            mysqlDataMigration.syncTable(tableName, suffix + "_tmp");
 
-            mysqlDataMigration.syncTable(tableName, suffix);
+            // 删除旧表
+            dropOldTableIfExists(targetTableName, tenantId, dataSourceId);
+
+            // 临时表重命名为主表
+            String temTableName = tableName + suffix + "_tmp";
+            baseDAO.exec("ALTER TABLE `"+ temTableName  +"` RENAME TO `"  + targetTableName + "`");
+
             // 记录到租户关联表
             SysTenantTable tenantTable = new SysTenantTable();
             tenantTable.setDataSourceId(dataSourceId);
@@ -110,6 +110,21 @@ public class DataMigrationServiceImpl implements DataMigrationService {
         }
 
     }
+
+
+    private void dropOldTableIfExists(String targetTableName, String tenantId, Long dataSourceId) {
+        BaseDAO baseDAO = BaseDAO.mysqlInstance();
+        // 本地如果存在该表，则先删除
+
+        baseDAO.exec("DROP TABLE IF EXISTS `"+ targetTableName  +"`");
+        // 如果存在租户和该表关系，也需要先删除
+        SysTenantTable sysTable = baseDAO.getOne("select * from sys_tenant_table where table_name=? and tenant_id=? and data_source_id=?",
+                SysTenantTable.class, targetTableName, tenantId, dataSourceId);
+        if(sysTable != null){
+            baseDAO.deleteById(SysTenantTable.class, sysTable.getId());
+        }
+    }
+
 
 
     private String getSuffix(Long dataSourceId, String tenantId) {

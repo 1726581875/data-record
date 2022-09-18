@@ -56,6 +56,7 @@ public class MysqlDataMigration {
 
     private void syncTableData(String tableName, String suffix) {
         // 全量获取数据列表
+        // todo 分批查询
         List<Map> resultMapList = sourceBaseDAO.getList("select * from " + tableName, Map.class);
 
         // 数据入库本地数据库

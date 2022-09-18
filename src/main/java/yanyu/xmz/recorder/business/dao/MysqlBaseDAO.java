@@ -74,7 +74,12 @@ public class MysqlBaseDAO implements BaseDAO {
                     prepareStatement.setObject(i, params[i-1]);
                 }
             }
+            // 执行查询sql，获取查询结果
             ResultSet resultSet = prepareStatement.executeQuery();
+            // 如果返回值是List类型，则返回结果的第一行为列名
+            if(List.class.equals(returnType)) {
+                resultList.add((T) analyzeGetColumnNameList(resultSet));
+            }
             while (resultSet.next()) {
                 resultList.add(analyzeResult(resultSet, returnType));
             }
@@ -83,6 +88,15 @@ public class MysqlBaseDAO implements BaseDAO {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private List<String> analyzeGetColumnNameList(ResultSet resultSet) throws SQLException {
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        List<String> columnNameList = new ArrayList<>();
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            columnNameList.add(metaData.getColumnLabel(i));
+        }
+        return columnNameList;
     }
 
 
@@ -98,6 +112,15 @@ public class MysqlBaseDAO implements BaseDAO {
                 resultMap.put(metaData.getColumnLabel(i), resultSet.getObject(i));
             }
             return (T) resultMap;
+        // 返回类型为List
+        } else if(List.class.equals(returnType)) {
+            List<Object> columnValueList = new ArrayList<>();
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                columnValueList.add(resultSet.getObject(i));
+            }
+            return (T) columnValueList;
+
         // 其他对象类型，解析对象字段，并赋值返回
         } else {
             T resultInstance = returnType.getConstructor().newInstance();

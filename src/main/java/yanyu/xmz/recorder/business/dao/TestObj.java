@@ -6,6 +6,7 @@ import yanyu.xmz.recorder.business.dao.annotation.Id;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author xiaomingzhang
@@ -35,12 +36,9 @@ public class TestObj {
 
         BaseDAO.mysqlInstance().createTableIfNotExist(TestObj.class);
 
-        List<TestObj> testObjList = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            testObjList.add(new TestObj("xmz",null, null));
-        }
+        List<List> list = BaseDAO.mysqlInstance().getList("select * from test_obj", List.class);
 
-        BaseDAO.mysqlInstance().batchInsert(testObjList);
+        list.forEach(e -> System.out.println(e.stream().collect(Collectors.joining(","))));
 
     }
 

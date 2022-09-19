@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.MysqlBaseDAO;
+import yanyu.xmz.recorder.business.enums.StateEnum;
+import yanyu.xmz.recorder.business.enums.StepEnum;
 import yanyu.xmz.recorder.business.model.entity.SysDataSource;
+import yanyu.xmz.recorder.business.model.entity.SysDataSyncRecord;
 import yanyu.xmz.recorder.business.model.entity.SysTenantTable;
 import yanyu.xmz.recorder.business.model.sys.DataMigrationDTO;
 import yanyu.xmz.recorder.business.service.DataMigrationService;
@@ -34,13 +37,37 @@ public class DataMigrationServiceImpl implements DataMigrationService {
     @Override
     public void doDataMigration(DataMigrationDTO dto) {
         dataMigrationThreadPoolExecutor.execute(() -> {
-                    if (StringUtils.hasLength(dto.getTableName())) {
-                        syncTables(Arrays.asList(dto.getTableName()), dto.getTenantId(), dto.getDataSourceId());
-                    } else {
-                        SysDataSource dataSource = getDataSource(dto.getTenantId(), dto.getDataSourceId());
-                        BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
-                        List<String> tableNameList = netBaseDAO.getList("show tables from `" + dataSource.getSchemaName() + "`", String.class);
+                    SysDataSyncRecord syncRecord = new SysDataSyncRecord();
+                    syncRecord.setTenantId(dto.getTenantId());
+                    syncRecord.setDataSourceId(dto.getDataSourceId());
+                    try {
+                        List<String> tableNameList = null;
+                        if (StringUtils.hasLength(dto.getTableName())) {
+                            syncRecord.setSourceTableName(dto.getTableName());
+                            tableNameList = Arrays.asList(dto.getTableName());
+                        } else {
+                            SysDataSource dataSource = getDataSource(dto.getTenantId(), dto.getDataSourceId());
+                            syncRecord.setDbName(dataSource.getSchemaName());
+                            // 获取数据库下的所有表名
+                            BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
+                            tableNameList = netBaseDAO.getList("show tables from `" + dataSource.getSchemaName() + "`", String.class);
+                        }
+                        // 插入一条同步记录，状态:RUNNING
+                        syncRecord.setSyncStatus(StateEnum.RUNNING.name());
+                        Long insertReturnKey = BaseDAO.mysqlInstance().insertReturnKey(syncRecord);
+                        syncRecord.setId(insertReturnKey);
+
+                        // 开始同步数据
                         syncTables(tableNameList, dto.getTenantId(), dto.getDataSourceId());
+
+                        // 更新同步状态，状态:SUCCESS
+                        syncRecord.setSyncStatus(StateEnum.SUCCESS.name());
+                        BaseDAO.mysqlInstance().updateById(syncRecord);
+                    } catch (Exception e) {
+                        log.error("备份数据失败", e);
+                        // 更新同步状态，状态:FAIL
+                        syncRecord.setSyncStatus(StateEnum.FAIL.name());
+                        BaseDAO.mysqlInstance().updateById(syncRecord);
                     }
                 }
         );
@@ -98,6 +125,7 @@ public class DataMigrationServiceImpl implements DataMigrationService {
             tenantTable.setDataSourceId(dataSourceId);
             tenantTable.setTenantId(tenantId);
             tenantTable.setTableName(tableName + suffix);
+            tenantTable.setSourceTableName(tableName);
             sysTenantTableList.add(tenantTable);
 
             log.info("===== 表 {} 同步结束.. [end] 耗时={}s =====", tableName, (System.currentTimeMillis() - startTime) / 1000);

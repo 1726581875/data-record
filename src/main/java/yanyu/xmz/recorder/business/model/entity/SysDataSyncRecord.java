@@ -6,9 +6,9 @@ import java.util.Date;
 
 /**
  * @author xiaomingzhang
- * @date 2022/9/13
+ * @date 2022/9/19
  */
-public class SysTenantTable {
+public class SysDataSyncRecord {
 
     @Id
     private Long id;
@@ -17,14 +17,15 @@ public class SysTenantTable {
 
     private Long dataSourceId;
 
+    private String dbName;
+
     private String sourceTableName;
 
-    private String tableName;
+    private String syncStatus;
 
     private Date createTime;
 
     private Date updateTime;
-
 
     public Long getId() {
         return id;
@@ -50,6 +51,13 @@ public class SysTenantTable {
         this.dataSourceId = dataSourceId;
     }
 
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
 
     public String getSourceTableName() {
         return sourceTableName;
@@ -59,12 +67,12 @@ public class SysTenantTable {
         this.sourceTableName = sourceTableName;
     }
 
-    public String getTableName() {
-        return tableName;
+    public String getSyncStatus() {
+        return syncStatus;
     }
 
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+    public void setSyncStatus(String syncStatus) {
+        this.syncStatus = syncStatus;
     }
 
     public Date getCreateTime() {
@@ -83,15 +91,15 @@ public class SysTenantTable {
         this.updateTime = updateTime;
     }
 
-
     @Override
     public String toString() {
-        return "SysTenantTable{" +
+        return "SysDataSyncRecord{" +
                 "id=" + id +
                 ", tenantId='" + tenantId + '\'' +
                 ", dataSourceId=" + dataSourceId +
+                ", dbName='" + dbName + '\'' +
                 ", sourceTableName='" + sourceTableName + '\'' +
-                ", tableName='" + tableName + '\'' +
+                ", syncStatus='" + syncStatus + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 '}';

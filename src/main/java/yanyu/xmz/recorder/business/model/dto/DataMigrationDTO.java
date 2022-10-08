@@ -1,4 +1,4 @@
-package yanyu.xmz.recorder.business.model.sys;
+package yanyu.xmz.recorder.business.model.dto;
 
 /**
  * @author xiaomingzhang

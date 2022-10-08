@@ -9,12 +9,12 @@ import org.springframework.util.StringUtils;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.MysqlBaseDAO;
 import yanyu.xmz.recorder.business.enums.StateEnum;
-import yanyu.xmz.recorder.business.enums.StepEnum;
 import yanyu.xmz.recorder.business.model.entity.SysDataSource;
 import yanyu.xmz.recorder.business.model.entity.SysDataSyncRecord;
 import yanyu.xmz.recorder.business.model.entity.SysTenantTable;
-import yanyu.xmz.recorder.business.model.sys.DataMigrationDTO;
+import yanyu.xmz.recorder.business.model.dto.DataMigrationDTO;
 import yanyu.xmz.recorder.business.service.DataMigrationService;
+import yanyu.xmz.recorder.business.service.DataSourceService;
 import yanyu.xmz.recorder.business.service.dm.MysqlDataMigration;
 
 import java.util.ArrayList;
@@ -28,6 +28,11 @@ import java.util.List;
 @Service
 public class DataMigrationServiceImpl implements DataMigrationService {
 
+
+    @Autowired
+    private DataSourceService dataSourceService;
+
+
     private static final Logger log = LoggerFactory.getLogger(DataMigrationServiceImpl.class);
 
 
@@ -38,29 +43,16 @@ public class DataMigrationServiceImpl implements DataMigrationService {
     public void doDataMigration(DataMigrationDTO dto) {
         dataMigrationThreadPoolExecutor.execute(() -> {
                     SysDataSyncRecord syncRecord = new SysDataSyncRecord();
-                    syncRecord.setTenantId(dto.getTenantId());
-                    syncRecord.setDataSourceId(dto.getDataSourceId());
                     try {
-                        List<String> tableNameList = null;
-                        if (StringUtils.hasLength(dto.getTableName())) {
-                            syncRecord.setSourceTableName(dto.getTableName());
-                            tableNameList = Arrays.asList(dto.getTableName());
-                        } else {
-                            SysDataSource dataSource = getDataSource(dto.getTenantId(), dto.getDataSourceId());
-                            syncRecord.setDbName(dataSource.getSchemaName());
-                            // 获取数据库下的所有表名
-                            BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
-                            tableNameList = netBaseDAO.getList("show tables from `" + dataSource.getSchemaName() + "`", String.class);
-                        }
-                        // 插入一条同步记录，状态:RUNNING
-                        syncRecord.setSyncStatus(StateEnum.RUNNING.name());
-                        Long insertReturnKey = BaseDAO.mysqlInstance().insertReturnKey(syncRecord);
-                        syncRecord.setId(insertReturnKey);
+                        // 插入一条同步记录
+                        syncRecord = saveSyncRecord(dto);
 
                         // 开始同步数据
+                        List<String> tableNameList = getSyncTableList(dto);
                         syncTables(tableNameList, dto.getTenantId(), dto.getDataSourceId());
 
                         // 更新同步状态，状态:SUCCESS
+                        updateSyncRecord(syncRecord, StateEnum.SUCCESS.name());
                         syncRecord.setSyncStatus(StateEnum.SUCCESS.name());
                         BaseDAO.mysqlInstance().updateById(syncRecord);
                     } catch (Exception e) {
@@ -74,16 +66,45 @@ public class DataMigrationServiceImpl implements DataMigrationService {
     }
 
 
-    private SysDataSource getDataSource(String tenantId, Long dataSourceId) {
-        BaseDAO baseDAO = BaseDAO.mysqlInstance();
-        SysDataSource dataSource = baseDAO.getOne("select * from sys_data_source where tenant_id = ? and id = ?",
-                SysDataSource.class, tenantId, dataSourceId);
-
-        if(dataSource == null) {
-            throw new RuntimeException("租户数据源不存在,tenantId=" + tenantId + ",dataSourceId=" + dataSourceId);
+    private SysDataSyncRecord saveSyncRecord(DataMigrationDTO dto) {
+        SysDataSyncRecord syncRecord = new SysDataSyncRecord();
+        syncRecord.setTenantId(dto.getTenantId());
+        syncRecord.setDataSourceId(dto.getDataSourceId());
+        if (StringUtils.hasLength(dto.getTableName())) {
+            // 设置同步表名
+            syncRecord.setSourceTableName(dto.getTableName());
+        } else {
+            // 设置数据库名称
+            SysDataSource dataSource = dataSourceService.getDataSource(dto.getTenantId(), dto.getDataSourceId());
+            syncRecord.setDbName(dataSource.getSchemaName());
         }
-        return dataSource;
+        // 插入一条同步记录，状态:RUNNING
+        syncRecord.setSyncStatus(StateEnum.RUNNING.name());
+        Long insertReturnKey = BaseDAO.mysqlInstance().insertReturnKey(syncRecord);
+        // 设置id
+        syncRecord.setId(insertReturnKey);
+        return syncRecord;
     }
+
+    private void updateSyncRecord(SysDataSyncRecord syncRecord, String syncStatus) {
+        syncRecord.setSyncStatus(syncStatus);
+        BaseDAO.mysqlInstance().updateById(syncRecord);
+    }
+
+
+    private List<String> getSyncTableList(DataMigrationDTO dto) {
+        // 判断是否仅仅同步单个表
+        if (StringUtils.hasLength(dto.getTableName())) {
+            return Arrays.asList(dto.getTableName());
+        } else {
+            // tableName参数为空，则同步该数据库下的所有表
+            SysDataSource dataSource = dataSourceService.getDataSource(dto.getTenantId(), dto.getDataSourceId());
+            // 获取数据库下的所有表名
+            BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
+            return netBaseDAO.getList("show tables from `" + dataSource.getSchemaName() + "`", String.class);
+        }
+    }
+
 
 
     private void syncTables(List<String> tableNameList, String tenantId, Long dataSourceId) {
@@ -94,7 +115,7 @@ public class DataMigrationServiceImpl implements DataMigrationService {
         }
 
         BaseDAO baseDAO = BaseDAO.mysqlInstance();
-        SysDataSource dataSource = getDataSource(tenantId, dataSourceId);
+        SysDataSource dataSource = dataSourceService.getDataSource(tenantId, dataSourceId);
 
         BaseDAO netBaseDAO = new MysqlBaseDAO(dataSource.getConfig());
         List<SysTenantTable> sysTenantTableList = new ArrayList<>(tableNameList.size());

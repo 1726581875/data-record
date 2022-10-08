@@ -1,6 +1,6 @@
 package yanyu.xmz.recorder.business.service;
 
-import yanyu.xmz.recorder.business.model.sys.DataMigrationDTO;
+import yanyu.xmz.recorder.business.model.dto.DataMigrationDTO;
 
 /**
  * @author xiaomingzhang

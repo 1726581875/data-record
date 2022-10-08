@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import yanyu.xmz.recorder.business.model.RespResult;
-import yanyu.xmz.recorder.business.model.sys.DataMigrationDTO;
+import yanyu.xmz.recorder.business.model.dto.DataMigrationDTO;
 import yanyu.xmz.recorder.business.service.DataMigrationService;
 
 /**

@@ -85,7 +85,7 @@ public class ChannelManager {
      */
     private MyPacketChannel openConnectChanel() throws IOException {
         // 1、和mysql建立连接，会首先收到服务器发来的初始化握手包
-        MyPacketChannel localChannel = openChannel(this.connectTimeout == null ? 1000 * 60 : this.connectTimeout,  this.hostname, this.port);
+        MyPacketChannel localChannel = openChannel(this.connectTimeout == null ? 1000 * 30 : this.connectTimeout,  this.hostname, this.port);
         GreetingPacket greetingPacket = receiveGreeting(localChannel);
         // 2、握手响应，携带并授权信息，接收到服务发送回来的ok包就表示验证成功
         // Protocol::HandshakeResponse41握手响应包具体内容见 https://dev.mysql.com/doc/internals/en/connection-phase-packets.html

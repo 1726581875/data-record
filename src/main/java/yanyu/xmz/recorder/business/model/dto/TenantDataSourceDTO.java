@@ -8,12 +8,12 @@ public class TenantDataSourceDTO {
 
     private String tenantId;
 
-    private String dataSourceId;
+    private Long dataSourceId;
 
     public TenantDataSourceDTO() {
     }
 
-    public TenantDataSourceDTO(String tenantId, String dataSourceId) {
+    public TenantDataSourceDTO(String tenantId, Long dataSourceId) {
         this.tenantId = tenantId;
         this.dataSourceId = dataSourceId;
     }
@@ -26,11 +26,11 @@ public class TenantDataSourceDTO {
         this.tenantId = tenantId;
     }
 
-    public String getDataSourceId() {
+    public Long getDataSourceId() {
         return dataSourceId;
     }
 
-    public void setDataSourceId(String dataSourceId) {
+    public void setDataSourceId(Long dataSourceId) {
         this.dataSourceId = dataSourceId;
     }
 

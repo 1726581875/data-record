@@ -12,6 +12,10 @@ import java.util.List;
  */
 public class ResultPacket {
 
+    /**
+     * 结果包类型
+     * OK、ERR、EOF
+     */
     private String type;
 
     private Packet packet;

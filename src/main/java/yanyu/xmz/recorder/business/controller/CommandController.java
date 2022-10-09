@@ -21,7 +21,7 @@ public class CommandController {
     private CommandService commandService;
 
 
-    @PostMapping("ping")
+    @PostMapping("/ping")
     public RespResult<Boolean> ping(@RequestBody TenantDataSourceDTO dto){
         return RespResult.success(commandService.ping(dto));
     }

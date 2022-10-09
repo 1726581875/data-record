@@ -127,7 +127,6 @@ public class DataMigrationServiceImpl implements DataMigrationService {
             log.info("===== 开始同步表 {} =====", tableName);
 
             String suffix = getSuffix(dataSourceId, tenantId);
-            // 本地如果存在该表，则先删除
             String targetTableName = tableName + suffix;
 
             // 执行同步程序，同步数据到临时表

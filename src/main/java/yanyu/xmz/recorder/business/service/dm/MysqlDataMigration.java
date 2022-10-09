@@ -1,5 +1,7 @@
 package yanyu.xmz.recorder.business.service.dm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +11,8 @@ import java.util.Map;
  * @date 2022/9/5
  */
 public class MysqlDataMigration {
+
+    private static final Logger log = LoggerFactory.getLogger(MysqlDataMigration.class);
 
     private BaseDAO sourceBaseDAO;
 
@@ -29,9 +33,9 @@ public class MysqlDataMigration {
         }
 
         for (String tableName : tableNameList) {
-            System.out.println("========= 表:" + tableName + " 开始 ==========");
+            log.info("========= 表:" + tableName + " 开始 ==========");
             syncTable(tableName, suffix);
-            System.out.println("========= 表:" + tableName + " 结束 ==========");
+            log.info("========= 表:" + tableName + " 结束 ==========");
         }
 
     }
@@ -62,13 +66,24 @@ public class MysqlDataMigration {
 
         Long pageNum = count % batchMaxNum == 0L ? count / batchMaxNum : (count / batchMaxNum) + 1L;
 
+        long dataSyncStartTime = System.currentTimeMillis();
         for (Long i = 1L; i <= pageNum; i++) {
+            long batchStartTime = System.currentTimeMillis();
+            log.info("{}表,第{}页数据,一共{}页 limit={},开始", tableName, i, pageNum, batchMaxNum);
             // 查询
             List<Map> resultMapList = sourceBaseDAO.getList("select * from `" + tableName
-                            + "` limit " + batchMaxNum + " offset " + (pageNum - 1) * batchMaxNum, Map.class);
+                    + "` limit " + batchMaxNum + " offset " + (i - 1) * batchMaxNum, Map.class);
+
             // 数据入库本地数据库
-            targetBaseDAO.batchInsert(tableName + suffix, resultMapList);
+            if (resultMapList != null && resultMapList.size() > 0) {
+                targetBaseDAO.batchInsert(tableName + suffix, resultMapList);
+            }
+
+            log.info("{}表,第{}页数据 size={},批次结束,耗时={}s", tableName, i,resultMapList == null ? 0 : resultMapList.size()
+                    , (System.currentTimeMillis() - batchStartTime) / 1000);
         }
+
+        log.info("{}表数据同步结束,数据量={},总耗时={}", tableName, count, (System.currentTimeMillis() - dataSyncStartTime) / 1000);
     }
 
 }

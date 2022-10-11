@@ -44,8 +44,9 @@ public class CommandServiceImpl implements CommandService {
             return "OK".equals(resultPacket.getType());
         } catch (Exception e) {
             log.error("ping命令执行失败,dataSource={}", e, dataSource);
-            return false;
         }
+
+        return false;
     }
 
 

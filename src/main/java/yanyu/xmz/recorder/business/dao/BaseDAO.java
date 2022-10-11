@@ -2,7 +2,6 @@ package yanyu.xmz.recorder.business.dao;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author xiaomingzhang
@@ -111,18 +110,20 @@ public interface BaseDAO {
     <T> void createTable(Class<T> entity);
 
     /**
-     * 删除表
+     * 如果表存在则删除表
      * @param entity
      * @param <T>
      */
     <T> void dropTableIfExist(Class<T> entity);
+    <T> void dropTableIfExist(Class<T> entity, String suffix);
 
     /**
-     * 创建表
+     * 如果表不存在则创建表
      * @param entity
      * @param <T>
      */
     <T> void createTableIfNotExist(Class<T> entity);
+    <T> void createTableIfNotExist(Class<T> entity, String suffix);
 
 
     /**

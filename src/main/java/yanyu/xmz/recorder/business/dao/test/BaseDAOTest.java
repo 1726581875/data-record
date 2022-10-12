@@ -1,6 +1,6 @@
-package yanyu.xmz.recorder.business.dao;
+package yanyu.xmz.recorder.business.dao.test;
 
-import yanyu.xmz.recorder.business.entity.metadata.MysqlTable;
+import yanyu.xmz.recorder.business.dao.BaseDAO;
 
 import java.util.ArrayList;
 import java.util.Date;

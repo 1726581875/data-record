@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
 import yanyu.xmz.recorder.business.dao.annotation.TableField;
-import yanyu.xmz.recorder.business.dao.obj.FieldDetail;
 import yanyu.xmz.recorder.business.dao.util.ConnectUtil;
 import yanyu.xmz.recorder.business.dao.util.ConnectionManagerUtil;
 import yanyu.xmz.recorder.business.dao.util.NameConvertUtil;
@@ -35,11 +34,6 @@ public class MysqlBaseDAO implements BaseDAO {
     private static final String UPDATE_TEMPLATE = "update %s set %s where %s = ?";
 
     private static final String CREATE_TABLE_SQL_TEMPLATE = "create table `%s` (\n%s\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-    /**
-     * 存储列名对应的列信息
-     */
-    protected static ThreadLocal<Map<String, FieldDetail>> fieldDetailMapThreadLocal = new ThreadLocal<>();
 
 
     private static final Logger log = LoggerFactory.getLogger(MysqlBaseDAO.class);
@@ -81,7 +75,7 @@ public class MysqlBaseDAO implements BaseDAO {
             }
             // 执行查询sql，获取查询结果
             ResultSet resultSet = prepareStatement.executeQuery();
-            // 如果返回值是List类型，则返回结果的第一行为列名
+            // 如果returnType类型是List，则返回结果的第一行为列名
             if(List.class.equals(returnType)) {
                 resultList.add((T) analyzeGetColumnNameList(resultSet));
             }
@@ -144,7 +138,6 @@ public class MysqlBaseDAO implements BaseDAO {
                              value = resultSet.getObject(fieldName);
                         }
                         if (Objects.nonNull(value)) {
-                            // todo 通过setxxx方法设置值
                             field.setAccessible(true);
                             field.set(resultInstance, convertValue(field, value));
                         }
@@ -254,8 +247,6 @@ public class MysqlBaseDAO implements BaseDAO {
         } catch (Exception e) {
             log.error("插入失败", e);
             throw new RuntimeException("数据库插入失败:" + e.getMessage());
-        } finally {
-            fieldDetailMapThreadLocal.remove();
         }
     }
 
@@ -631,38 +622,6 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-    private String getInsertPrepareSQL(Object object) {
-
-        Class<?> objectClass = object.getClass();
-        Field[] fields = objectClass.getDeclaredFields();
-        List<String> columnList = new ArrayList<>(fields.length);
-
-        int paramIndex = 1;
-        for (int i = 0; i < fields.length; i++) {
-            try {
-                // todo 后续改为通过getXXX方法获取列的值
-                fields[i].setAccessible(true);
-                if (fields[i].get(object) == null) {
-                    continue;
-                }
-            } catch (IllegalAccessException e) {
-                continue;
-            }
-            String column = NameConvertUtil.toDbRule(fields[i].getName());
-            columnList.add(NameConvertUtil.around(column, "`"));
-
-            // 记录列参数信息到ThreadLocal
-            recordFieldDetail(new FieldDetail(fields[i].getName(), paramIndex++, 0, fields[i].getClass()));
-        }
-
-        String tableNameStr = NameConvertUtil.toDbRule(objectClass.getSimpleName());
-
-        String columnStr = columnList.stream().collect(Collectors.joining(","));
-
-        // 拼接预编译sql片段
-        return String.format(INSERT_TEMPLATE, tableNameStr, columnStr, getPlaceholder(paramIndex - 1));
-    }
-
     protected String getTableName(Object object) {
 
         if(object == null) {
@@ -716,18 +675,6 @@ public class MysqlBaseDAO implements BaseDAO {
         // 拼接预编译sql片段
         return String.format(INSERT_TEMPLATE, tableName, columnStr, getPlaceholder(columnNameList.size()));
     }
-
-
-
-    private void recordFieldDetail(FieldDetail fieldDetail) {
-        Map<String, FieldDetail> fieldDetailMap = fieldDetailMapThreadLocal.get();
-        if (fieldDetailMap == null) {
-            fieldDetailMap = new HashMap<>();
-            fieldDetailMapThreadLocal.set(fieldDetailMap);
-        }
-        fieldDetailMap.put(fieldDetail.getFieldName(), fieldDetail);
-    }
-
 
     /**
      * 获取占位符片段

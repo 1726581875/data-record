@@ -1,9 +1,9 @@
-package yanyu.xmz.recorder.business.dao;
+package yanyu.xmz.recorder.business.dao.test;
 
+import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;

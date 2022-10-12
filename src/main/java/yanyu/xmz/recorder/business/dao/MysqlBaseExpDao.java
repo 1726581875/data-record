@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * @author xiaomingzhang
  * @date 2022/10/11
+ * 扩展类
  */
 public class MysqlBaseExpDao extends MysqlBaseDAO {
 

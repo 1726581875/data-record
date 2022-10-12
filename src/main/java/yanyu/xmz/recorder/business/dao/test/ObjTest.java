@@ -1,9 +1,5 @@
 package yanyu.xmz.recorder.business.dao.test;
 
-import yanyu.xmz.recorder.business.dao.TestObj;
-
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * @author xiaomingzhang
  * @date 2022/10/11

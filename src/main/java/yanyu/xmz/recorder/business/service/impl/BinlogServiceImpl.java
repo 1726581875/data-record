@@ -34,11 +34,12 @@ public class BinlogServiceImpl implements BinlogService {
 
         SysDataSource dataSource = dataSourceService.getDataSource(tenantId, dataSourceId);
 
-        String tableSuffix = "_" + tenantId + "_" + dataSource;
+        String tableSuffix = "_" + tenantId + "_" + dataSourceId;
         // 删除表
         dropTables(tableSuffix);
         // 初始化表
         initTable(tableSuffix);
+
 
 
         MyBinaryLogClient client = new MyBinaryLogClient(dataSource.getHostname(),
@@ -49,15 +50,21 @@ public class BinlogServiceImpl implements BinlogService {
             EventHeader header = event.getHeader();
             DbEventHandler handler = HandlerFactory.getHandler(header.getEventType());
             if (handler != null) {
-                handler.saveEvent(client.getBinlogPosition(), client.getBinlogFilename(), event);
+                handler.saveEvent(client.getBinlogPosition(), client.getBinlogFilename(), tableSuffix, event);
             }
         });
-        // 连接
-        try {
-            client.connect();
-        } catch (IOException e) {
-            log.error("解析binlog日志发生异常", e);
-        }
+
+        new Thread(() ->{
+            log.info("监听解析binlog【开始】 >>>> 租户id={},数据源id={}", tenantId, dataSourceId);
+            // 连接
+            try {
+                client.connect();
+            } catch (IOException e) {
+                log.error("监听解析binlog发生异常,租户id={},数据源id={}", tenantId, dataSourceId, e);
+            }
+            log.info("监听解析binlog【结束】 >>>> 租户id={},数据源id={}", tenantId, dataSourceId);
+        }).start();
+
     }
 
 

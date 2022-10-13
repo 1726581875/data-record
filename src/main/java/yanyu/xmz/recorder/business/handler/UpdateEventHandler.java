@@ -36,7 +36,7 @@ public class UpdateEventHandler extends AbstractMysqlEventHandler {
         tableName = null;
         databaseName = null;
         // 事件信息保存到数据库
-        BaseDAO.mysqlInstance().updateById(eventRecord);
+        baseExpDao.updateById(eventRecord, tableSuffix);
 
         // 保存更新事件变更记录
         List<Map.Entry<Serializable[], Serializable[]>> rows = updateRowsEventData.getRows();
@@ -45,7 +45,7 @@ public class UpdateEventHandler extends AbstractMysqlEventHandler {
         for (Map.Entry<Serializable[], Serializable[]> row : rows) {
             updateRowRecords.add(new UpdateRowRecord(eventRecord.getId(), gson.toJson(row.getKey()), gson.toJson(row.getValue())));
         }
-        BaseDAO.mysqlInstance().batchInsert(updateRowRecords);
+        baseExpDao.batchInsert(updateRowRecords, tableSuffix);
         return eventRecord;
     }
 }

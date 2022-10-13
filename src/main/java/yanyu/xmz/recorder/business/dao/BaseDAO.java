@@ -141,5 +141,13 @@ public interface BaseDAO {
         return new MysqlBaseDAO();
     }
 
+    /**
+     * 扩展dao
+     * @return
+     */
+    static MysqlBaseExpDao expDaoInstance() {
+        return new MysqlBaseExpDao();
+    }
+
 
 }

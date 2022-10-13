@@ -31,7 +31,7 @@ public class InsertEventHandler extends AbstractMysqlEventHandler {
         databaseName = null;
 
         // 保存事件详情信息
-        BaseDAO.mysqlInstance().updateById(eventRecord);
+        baseExpDao.updateById(eventRecord, tableSuffix);
 
         // 保存插入事件数据变更记录
         List<Serializable[]> rows = writeRowsEventData.getRows();
@@ -39,7 +39,7 @@ public class InsertEventHandler extends AbstractMysqlEventHandler {
         for (Serializable[] row : rows) {
             insertRowRecords.add(new InsertRowRecord(eventRecord.getId(), gson.toJson(row)));
         }
-        BaseDAO.mysqlInstance().batchInsert(insertRowRecords);
+        baseExpDao.batchInsert(insertRowRecords, tableSuffix);
         return eventRecord;
     }
 }

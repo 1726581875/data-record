@@ -20,7 +20,7 @@ public class TableMapEventHandler extends AbstractMysqlEventHandler {
         eventRecord.setDatabaseName(tableMapEventData.getDatabase());
         eventRecord.setTableName(tableMapEventData.getTable());
         eventRecord.setStep(StepEnum.SAVE_SUCCESS.name());
-        BaseDAO.mysqlInstance().updateById(eventRecord);
+        baseExpDao.updateById(eventRecord, tableSuffix);
 
 
         tableName = tableMapEventData.getTable();

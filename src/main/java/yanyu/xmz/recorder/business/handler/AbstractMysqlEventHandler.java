@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
+import yanyu.xmz.recorder.business.dao.MysqlBaseExpDao;
 import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.entity.metadata.MysqlColumn;
 import yanyu.xmz.recorder.business.enums.StateEnum;
@@ -30,6 +31,13 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
     protected static String databaseName;
 
+    protected static String tableSuffix = "";
+
+    /**
+     *
+     */
+    protected MysqlBaseExpDao baseExpDao = BaseDAO.expDaoInstance();
+
     /**
      * 元数据缓存
      * Map<dbName,Map<tableName,List<MysqlMetadata>>>
@@ -39,7 +47,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
     private static final Logger log = LoggerFactory.getLogger(AbstractMysqlEventHandler.class);
 
     @Override
-    public void saveEvent(Long startPos, String fileName, Event event) {
+    public void saveEvent(Long startPos, String fileName, String suffix, Event event) {
 
         if(binLogStartPos == null) {
             binLogStartPos = startPos;
@@ -48,6 +56,10 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
         if(binLogFileName == null) {
             binLogFileName = fileName;
+        }
+
+        if (suffix != null) {
+            tableSuffix = suffix;
         }
 
 
@@ -105,7 +117,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         dataRecord.setState(StateEnum.RUNNING.name());
         dataRecord.setStep(StepEnum.INIT.name());
         // 保存到数据库
-        Long id = BaseDAO.mysqlInstance().insertReturnKey(dataRecord);
+        Long id = baseExpDao.insertReturnKey(dataRecord, tableSuffix);
         dataRecord.setId(id);
 
         return dataRecord;
@@ -151,7 +163,7 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
                 }
             }
 
-        BaseDAO.mysqlInstance().updateById(dataRecord);
+        baseExpDao.updateById(dataRecord, tableSuffix);
 
 
         log.info("=====>保存事件信息成功,类型={},endPos={}",event.getHeader().getEventType().name(), binLogStartPos);

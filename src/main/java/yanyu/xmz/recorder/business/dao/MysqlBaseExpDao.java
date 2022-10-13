@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author xiaomingzhang
  * @date 2022/10/11
- * 扩展类
+ * dao扩展类
  */
 public class MysqlBaseExpDao extends MysqlBaseDAO {
 
@@ -75,6 +75,38 @@ public class MysqlBaseExpDao extends MysqlBaseDAO {
         }
     }
 
+
+    public <T> int batchInsert(List<T> rowMapList, String suffix) {
+        if (rowMapList == null || rowMapList.isEmpty()) {
+            log.warn("插入元素为空, 请检查参数");
+            return 0;
+        }
+        try {
+            String tableName = getTableName(rowMapList.get(0)) + suffix;
+            return batchInsertData(tableName, rowMapList);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public <T> int updateById(T obj, String suffix) {
+        if (obj == null) {
+            throw new RuntimeException("插入元素为空, 请检查参数");
+        }
+        List<String> updateColumnList = getUpdateColumnList(obj);
+        String tableName = getTableName(obj) + suffix;
+        String id = getId(obj.getClass());
+        String updatePrepareSQL = getUpdateByKeyPrepareSQL(tableName, id, updateColumnList);
+        log.info("根据主键更新SQL:" + updatePrepareSQL);
+        try (Connection conn = ConnectionManagerUtil.getConnection(super.getConfig());
+             PreparedStatement statement = conn.prepareStatement(updatePrepareSQL)) {
+            return execUpdateByKey(statement, obj, updateColumnList, id);
+        } catch (Exception e) {
+            log.error("插入失败", e);
+            throw new RuntimeException("数据库插入失败:" + e.getMessage());
+        }
+    }
 
 
 

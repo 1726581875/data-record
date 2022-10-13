@@ -64,7 +64,7 @@ public class BinLogListener {
             EventHeader header = event.getHeader();
             DbEventHandler handler = HandlerFactory.getHandler(header.getEventType());
             if (handler != null) {
-                handler.saveEvent(client.getBinlogPosition(), client.getBinlogFilename(), event);
+                handler.saveEvent(client.getBinlogPosition(), client.getBinlogFilename(),"", event);
             }
         });
         // 连接

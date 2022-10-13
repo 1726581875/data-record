@@ -31,7 +31,7 @@ public class DeleteEventHandler extends AbstractMysqlEventHandler {
         tableName = null;
         databaseName = null;
         // 保存事件基础信息到数据库
-        BaseDAO.mysqlInstance().updateById(eventRecord);
+        baseExpDao.updateById(eventRecord, tableSuffix);
 
         // 记录删除的行
         List<Serializable[]> rows = deleteRowsEventData.getRows();
@@ -39,7 +39,7 @@ public class DeleteEventHandler extends AbstractMysqlEventHandler {
         for (Serializable[] row : rows) {
             insertRowRecords.add(new DeleteRowRecord(eventRecord.getId(), gson.toJson(row)));
         }
-        BaseDAO.mysqlInstance().batchInsert(insertRowRecords);
+        baseExpDao.batchInsert(insertRowRecords, tableSuffix);
         return eventRecord;
     }
 }

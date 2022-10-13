@@ -381,7 +381,7 @@ public class MysqlBaseDAO implements BaseDAO {
             return 0;
         }
         try {
-            return batchInsertData(null,objectList);
+            return batchInsertData(null, objectList);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -400,7 +400,7 @@ public class MysqlBaseDAO implements BaseDAO {
         }
     }
 
-    private <T> int batchInsertData(String tableName, List<T> objectList) throws SQLException {
+    protected  <T> int batchInsertData(String tableName, List<T> objectList) throws SQLException {
         Connection conn = ConnectionManagerUtil.getConnection(config);
         PreparedStatement statement = null;
         int successRow = 0;
@@ -464,7 +464,7 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-    private String getId(Class<?> entity){
+    protected String getId(Class<?> entity){
         Field[] fields = entity.getDeclaredFields();
         for (Field field : fields) {
             if (Objects.nonNull(field.getAnnotation(Id.class))) {

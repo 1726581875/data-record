@@ -58,6 +58,15 @@ public class MysqlDataMigration {
         targetBaseDAO.exec(createTableSql);
     }
 
+
+    /**
+     *
+     * todo 1、只通过简单分批读取然后插入，导致只能用于数据不持续增加/修改的情况，如果数据持续新增/修改，无法做到同步某一刻的数据
+     * todo 2、大表数据同步慢，一千多万的表几乎三小时
+     * todo 3、会影响被源数据库的性能
+     * @param tableName
+     * @param suffix
+     */
     private void syncTableData(String tableName, String suffix) {
 
         Long batchMaxNum = 10000L;

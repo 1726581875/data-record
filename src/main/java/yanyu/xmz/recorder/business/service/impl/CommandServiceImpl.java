@@ -55,7 +55,7 @@ public class CommandServiceImpl implements CommandService {
         ChannelManager connectionChannel = new ChannelManager(dataSource.getHostname(),
                 Integer.valueOf(dataSource.getServerPort()), dataSource.getUsername() , dataSource.getPassword());
         try {
-            // 执行Ping命令
+            // 执行命令
             return sendCommand(connectionChannel, command);
         } catch (Exception e) {
             log.error("执行command失败", e);

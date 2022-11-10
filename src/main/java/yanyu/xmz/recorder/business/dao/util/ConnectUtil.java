@@ -69,6 +69,11 @@ public class ConnectUtil {
         config = connConfig;
     }
 
+
+    public synchronized static void setDataSource(String dataSourceName, Config config) {
+        dataSourceMap.put(dataSourceName, config);
+    }
+
     public synchronized static void changeDataSource(String dataSourceName){
         Config config = dataSourceMap.get(dataSourceName);
         if(config == null) {
@@ -127,6 +132,16 @@ public class ConnectUtil {
 
         public String getDriver() {
             return driver;
+        }
+
+        @Override
+        public String toString() {
+            return "Config{" +
+                    ", url='" + url + '\'' +
+                    ", username='" + username + '\'' +
+                    ", password='" + password + '\'' +
+                    ", driver='" + driver + '\'' +
+                    '}';
         }
     }
 

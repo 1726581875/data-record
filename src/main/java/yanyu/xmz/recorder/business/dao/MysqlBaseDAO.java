@@ -11,6 +11,7 @@ import yanyu.xmz.recorder.business.dao.util.ConnectionManagerUtil;
 import yanyu.xmz.recorder.business.dao.util.NameConvertUtil;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -256,6 +257,10 @@ public class MysqlBaseDAO implements BaseDAO {
         // 解析需要更新的字段
         List<String> columnList = new ArrayList<>(fields.length);
         for (Field field : fields) {
+            boolean isStatic = Modifier.isStatic(field.getModifiers());
+            if(isStatic) {
+                continue;
+            }
             if (isNotNullValue(field, object) && field.getAnnotation(Id.class) == null) {
                 String column = NameConvertUtil.toDbRule(field.getName());
                 columnList.add(column);
@@ -306,6 +311,11 @@ public class MysqlBaseDAO implements BaseDAO {
         Class<?> objectClass = object.getClass();
         Field[] declaredFields = objectClass.getDeclaredFields();
         for (Field field : declaredFields) {
+            boolean isStatic = Modifier.isStatic(field.getModifiers());
+            if(isStatic) {
+                continue;
+            }
+
             String fieldName = field.getName();
             Integer index = columnIndexMap.get(NameConvertUtil.toDbRule(fieldName));
             if (index != null) {
@@ -347,6 +357,10 @@ public class MysqlBaseDAO implements BaseDAO {
             Class<?> objectClass = object.getClass();
             Field[] declaredFields = objectClass.getDeclaredFields();
             for (Field field : declaredFields) {
+                boolean isStatic = Modifier.isStatic(field.getModifiers());
+                if(isStatic) {
+                    continue;
+                }
                 String columnName = NameConvertUtil.toDbRule(field.getName());
                 Integer columnIndex = columnIndexMap.get(columnName);
                 if (columnIndex != null) {
@@ -467,6 +481,10 @@ public class MysqlBaseDAO implements BaseDAO {
     protected String getId(Class<?> entity){
         Field[] fields = entity.getDeclaredFields();
         for (Field field : fields) {
+            boolean isStatic = Modifier.isStatic(field.getModifiers());
+            if(isStatic) {
+                continue;
+            }
             if (Objects.nonNull(field.getAnnotation(Id.class))) {
                 return NameConvertUtil.toDbRule(field.getName());
             }
@@ -565,6 +583,10 @@ public class MysqlBaseDAO implements BaseDAO {
         StringBuilder fieldSql = new StringBuilder();
         String idFieldName = "";
         for (Field field : fields) {
+            boolean isStatic = Modifier.isStatic(field.getModifiers());
+            if(isStatic) {
+                continue;
+            }
             String databaseFieldName = null;
 
             String fieldType = null;
@@ -650,6 +672,10 @@ public class MysqlBaseDAO implements BaseDAO {
             Field[] fields = objectClass.getDeclaredFields();
             columnList = new ArrayList<>(fields.length);
             for (Field field : fields) {
+                boolean isStatic = Modifier.isStatic(field.getModifiers());
+                if(isStatic) {
+                    continue;
+                }
                 if (isNotNullValue(field, object)) {
                     columnList.add(NameConvertUtil.toDbRule(field.getName()));
                 }

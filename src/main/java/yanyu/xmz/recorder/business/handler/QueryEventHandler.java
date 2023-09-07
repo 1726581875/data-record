@@ -2,7 +2,6 @@ package yanyu.xmz.recorder.business.handler;
 
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
-import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.entity.event.QueryEventRecord;
 
@@ -14,7 +13,7 @@ public class QueryEventHandler extends AbstractMysqlEventHandler {
 
     @Override
     protected EventRecord saveEventDetailToDatabase(Event event, EventRecord eventRecord) {
-        BaseDAO.mysqlInstance().insert(getQueryEventRecord(event, eventRecord.getId()));
+        baseExpDao.insert(getQueryEventRecord(event, eventRecord.getId()), tableSuffix);
         QueryEventData data = event.getData();
 
         // 处理mysql元数据变更

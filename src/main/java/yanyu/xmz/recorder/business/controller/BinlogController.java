@@ -22,11 +22,15 @@ public class BinlogController {
 
 
     @PostMapping("/listenBinlog")
-    public RespResult listenBinlog(@RequestBody TenantDataSourceDTO dto){
-        binlogService.listenBinlog(dto.getTenantId(), dto.getDataSourceId());
-        return RespResult.success();
+    public RespResult listenBinlog(@RequestBody TenantDataSourceDTO dto) {
+        return binlogService.listenBinlog(dto.getTenantId(), dto.getDataSourceId());
     }
 
+
+    @PostMapping("/cancelListen")
+    public RespResult cancelListen(@RequestBody TenantDataSourceDTO dto){
+        return binlogService.cancelListen(dto.getTenantId(), dto.getDataSourceId());
+    }
 
 
 

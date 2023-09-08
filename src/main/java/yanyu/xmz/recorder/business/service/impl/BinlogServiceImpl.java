@@ -41,7 +41,7 @@ public class BinlogServiceImpl implements BinlogService {
 
         BinlogListenState listenState = BaseDAO.expDaoInstance().getOne("select * from binlog_listen_state where state = '1' " +
                 "and tenant_id = ? and data_source_id = ? order by create_time desc limit 1", BinlogListenState.class, tenantId, dataSourceId);
-        if(listenState == null) {
+        if(listenState != null) {
             log.warn("正在监听中,tenantId={}, dataSourceId={}",tenantId, dataSourceId);
             return RespResult.fail("正在监听中, 不能重复启用监听程序");
         }
@@ -50,7 +50,7 @@ public class BinlogServiceImpl implements BinlogService {
 
         String tableSuffix = "_" + tenantId + "_" + dataSourceId;
         // 删除表
-         dropTables(tableSuffix);
+         //dropTables(tableSuffix);
         // 初始化表
         initTable(tableSuffix);
 

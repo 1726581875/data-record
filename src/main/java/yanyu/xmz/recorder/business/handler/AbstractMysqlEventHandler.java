@@ -3,6 +3,7 @@ package yanyu.xmz.recorder.business.handler;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
-    protected static final Gson gson = new Gson();
+    protected static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     private static Long binLogStartPos;
 

@@ -2,8 +2,6 @@ package yanyu.xmz.recorder.business.handler;
 
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
-import com.google.gson.Gson;
-import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.entity.event.UpdateRowRecord;
 import yanyu.xmz.recorder.business.enums.StepEnum;
@@ -41,7 +39,6 @@ public class UpdateEventHandler extends AbstractMysqlEventHandler {
         // 保存更新事件变更记录
         List<Map.Entry<Serializable[], Serializable[]>> rows = updateRowsEventData.getRows();
         List<UpdateRowRecord> updateRowRecords = new ArrayList<>(rows.size());
-        Gson gson = new Gson();
         for (Map.Entry<Serializable[], Serializable[]> row : rows) {
             updateRowRecords.add(new UpdateRowRecord(eventRecord.getId(), gson.toJson(row.getKey()), gson.toJson(row.getValue())));
         }

@@ -4,11 +4,13 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.MysqlBaseDAO;
+import yanyu.xmz.recorder.business.dao.YanySqlBaseDAO;
 import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
 import yanyu.xmz.recorder.business.entity.event.DeleteRowRecord;
 import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.entity.event.InsertRowRecord;
 import yanyu.xmz.recorder.business.entity.event.UpdateRowRecord;
+import yanyu.xmz.recorder.business.entity.yanysql.*;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -28,11 +30,13 @@ public class BinLogSimpleTest {
 
     private static final String password;
 
+    private static final YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO();
+
     static {
-        hostname = PropertiesReaderUtil.get("mysql.listener.hostname");
-        port = Integer.valueOf(PropertiesReaderUtil.get("mysql.listener.port"));
-        username = PropertiesReaderUtil.get("mysql.listener.username");
-        password = PropertiesReaderUtil.get("mysql.listener.password");
+        hostname = PropertiesReaderUtil.get("mysql.monitor.hostname");
+        port = Integer.valueOf(PropertiesReaderUtil.get("mysql.monitor.port"));
+        username = PropertiesReaderUtil.get("mysql.monitor.username");
+        password = PropertiesReaderUtil.get("mysql.monitor.password");
     }
 
 
@@ -49,7 +53,7 @@ public class BinLogSimpleTest {
         BinaryLogClient client = new BinaryLogClient(hostname, port,username, password);
         client.setServerId(2);
 
-        // 查询最新一条记录的binlog位置
+/*        // 查询最新一条记录的binlog位置
         EventRecord lastRecord = BaseDAO.mysqlInstance()
                 .getOne("select * from event_record where end_log_pos is not null order by create_time desc limit 1", EventRecord.class);
         if(Objects.nonNull(lastRecord)){
@@ -58,7 +62,7 @@ public class BinLogSimpleTest {
         }
 
         client.setBinlogFilename("mysql-bin.000001");
-        client.setBinlogPosition(415037L);
+        client.setBinlogPosition(415037L);*/
 
 
 

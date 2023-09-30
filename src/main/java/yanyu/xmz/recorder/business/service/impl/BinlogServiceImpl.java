@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
+import yanyu.xmz.recorder.business.dao.YanySqlBaseDAO;
 import yanyu.xmz.recorder.business.entity.event.*;
+import yanyu.xmz.recorder.business.entity.yanysql.*;
 import yanyu.xmz.recorder.business.handler.DbEventHandler;
 import yanyu.xmz.recorder.business.handler.factory.HandlerFactory;
 import yanyu.xmz.recorder.business.model.RespResult;
@@ -31,6 +33,8 @@ public class BinlogServiceImpl implements BinlogService {
     @Autowired
     private DataSourceService dataSourceService;
 
+    protected YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO();
+
 
     private Map<Long, MyBinaryLogClient> listenBinlogClientMap = new ConcurrentHashMap<>();
 
@@ -53,6 +57,7 @@ public class BinlogServiceImpl implements BinlogService {
          //dropTables(tableSuffix);
         // 初始化表
         initTable(tableSuffix);
+        initYanyTable();
 
 
         MyBinaryLogClient client = new MyBinaryLogClient(dataSource.getHostname(),
@@ -138,7 +143,22 @@ public class BinlogServiceImpl implements BinlogService {
         BaseDAO.mysqlInstance().createTableIfNotExist(BinlogListenState.class, "");
     }
 
-    private static void dropTables(String suffix) {
+    private void initYanyTable() {
+        // 删除表
+/*        yanySqlBaseDAO.dropTableIfExist(TEventRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TDeleteRowRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TInsertRowRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TQueryEventRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TUpdateRowRecord.class);*/
+        // 创建表
+        yanySqlBaseDAO.createTable(TEventRecord.class);
+        yanySqlBaseDAO.createTable(TDeleteRowRecord.class);
+        yanySqlBaseDAO.createTable(TInsertRowRecord.class);
+        yanySqlBaseDAO.createTable(TQueryEventRecord.class);
+        yanySqlBaseDAO.createTable(TUpdateRowRecord.class);
+    }
+
+    private  void dropTables(String suffix) {
         BaseDAO.mysqlInstance().dropTableIfExist(EventRecord.class, suffix);
         BaseDAO.mysqlInstance().dropTableIfExist(UpdateRowRecord.class, suffix);
         BaseDAO.mysqlInstance().dropTableIfExist(DeleteRowRecord.class, suffix);
@@ -146,7 +166,7 @@ public class BinlogServiceImpl implements BinlogService {
         BaseDAO.mysqlInstance().dropTableIfExist(QueryEventRecord.class, suffix);
     }
 
-    private static EventRecord getLastRecord(){
+    private  EventRecord getLastRecord(){
         return BaseDAO.mysqlInstance()
                 .getOne("select * from event_record where " +
                         "end_log_pos is not null " +

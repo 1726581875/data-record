@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.MysqlBaseExpDao;
+import yanyu.xmz.recorder.business.dao.YanySqlBaseDAO;
 import yanyu.xmz.recorder.business.entity.event.EventRecord;
 import yanyu.xmz.recorder.business.entity.metadata.MysqlColumn;
+import yanyu.xmz.recorder.business.entity.yanysql.TEventRecord;
 import yanyu.xmz.recorder.business.enums.StateEnum;
 import yanyu.xmz.recorder.business.enums.StepEnum;
 
@@ -35,9 +37,15 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
     protected static String tableSuffix = "";
 
     /**
-     *
+     * mysql
      */
     protected MysqlBaseExpDao baseExpDao = BaseDAO.expDaoInstance();
+    /**
+     * yanysql，自己写的数据库
+     */
+    protected YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO();
+
+    protected TEventRecord currRecord;
 
     /**
      * 元数据缓存
@@ -49,6 +57,8 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
 
     @Override
     public void saveEvent(Long startPos, String fileName, String suffix, Event event) {
+
+        this.currRecord = null;
 
         if(binLogStartPos == null) {
             binLogStartPos = startPos;
@@ -67,6 +77,12 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         log.info("=====>保存事件信息,类型={},pos={}",event.getHeader().getEventType().name(), binLogStartPos);
 
         EventRecord eventRecord = initEventRecord(event);
+        try {
+            TEventRecord tEventRecord = insertYanySql(event);
+            this.currRecord = tEventRecord;
+        } catch (Exception e) {
+            log.error("插入yanysql数据失败", e);
+        }
 
         try {
             // 保存事件信息和数据更改记录到数据库
@@ -121,6 +137,27 @@ public abstract class AbstractMysqlEventHandler implements DbEventHandler {
         Long id = baseExpDao.insertReturnKey(dataRecord, tableSuffix);
         dataRecord.setId(id);
 
+        return dataRecord;
+    }
+
+
+    /**
+     * 使用自己的数据库
+     * @param event
+     */
+    private TEventRecord insertYanySql(Event event){
+        EventType eventType = event.getHeader().getEventType();
+        TEventRecord dataRecord = new TEventRecord();
+        dataRecord.setId(UUID.randomUUID().toString().replace("-", ""));
+        dataRecord.setTenantId(tableSuffix);
+        dataRecord.setEventType(eventType.name());
+        dataRecord.setPos(binLogStartPos);
+        dataRecord.setBinLogFileName(binLogFileName);
+        dataRecord.setEventTimestamp(new Date(event.getHeader().getTimestamp()));
+        dataRecord.setState(StateEnum.RUNNING.name());
+        dataRecord.setStep(StepEnum.INIT.name());
+        dataRecord.setCreateTime(new Date());
+        yanySqlBaseDAO.insert(dataRecord);
         return dataRecord;
     }
 

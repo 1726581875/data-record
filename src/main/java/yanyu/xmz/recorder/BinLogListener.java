@@ -1,7 +1,9 @@
 package yanyu.xmz.recorder;
 
 import com.github.shyiko.mysql.binlog.event.EventHeader;
+import yanyu.xmz.recorder.business.dao.YanySqlBaseDAO;
 import yanyu.xmz.recorder.business.entity.event.*;
+import yanyu.xmz.recorder.business.entity.yanysql.*;
 import yanyu.xmz.recorder.business.handler.DbEventHandler;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
@@ -26,6 +28,8 @@ public class BinLogListener {
     private static final String password;
 
     private static final String schema;
+
+    private static final YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO();
 
     static {
         hostname = PropertiesReaderUtil.get("mysql.monitor.hostname");
@@ -53,6 +57,20 @@ public class BinLogListener {
             client.setBinlogFilename(lastRecord.getBinLogFileName());
             client.setBinlogPosition(lastRecord.getEndLogPos());
         }*/
+
+
+        // 删除表
+        yanySqlBaseDAO.dropTableIfExist(TEventRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TDeleteRowRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TInsertRowRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TQueryEventRecord.class);
+        yanySqlBaseDAO.dropTableIfExist(TUpdateRowRecord.class);
+        // 创建表
+        yanySqlBaseDAO.createTable(TEventRecord.class);
+        yanySqlBaseDAO.createTable(TDeleteRowRecord.class);
+        yanySqlBaseDAO.createTable(TInsertRowRecord.class);
+        yanySqlBaseDAO.createTable(TQueryEventRecord.class);
+        yanySqlBaseDAO.createTable(TUpdateRowRecord.class);
 
          // 固定位置读取
         client.setBinlogFilename("mysql-bin.000001");

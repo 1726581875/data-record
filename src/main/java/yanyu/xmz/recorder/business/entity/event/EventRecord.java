@@ -2,6 +2,7 @@ package yanyu.xmz.recorder.business.entity.event;
 
 import yanyu.xmz.recorder.business.dao.annotation.DateAuto;
 import yanyu.xmz.recorder.business.dao.annotation.Id;
+import yanyu.xmz.recorder.business.dao.annotation.TableField;
 import yanyu.xmz.recorder.business.enums.StateEnum;
 import yanyu.xmz.recorder.business.enums.StepEnum;
 
@@ -51,20 +52,24 @@ public class EventRecord {
     /**
      * 包含列
      */
+    @TableField(type = "varchar(1024) DEFAULT NULL")
     private String includedColumns;
     /**
      * 更新之前的列
      */
+    @TableField(type = "varchar(1024) DEFAULT NULL")
     private String includedColumnsBeforeUpdate;
 
 
     /**
      * 包含列名称
      */
+    @TableField(type = "varchar(1024) DEFAULT NULL")
     private String includedColumnNames;
     /**
      * 更新之前的列名称
      */
+    @TableField(type = "varchar(1024) DEFAULT NULL")
     private String columnNamesBeforeUpdate;
 
     /**

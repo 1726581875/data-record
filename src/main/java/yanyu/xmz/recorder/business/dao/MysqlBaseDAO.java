@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class MysqlBaseDAO implements BaseDAO {
 
-    private ConnectUtil.Config config;
+    protected ConnectUtil.Config config;
 
     private final static Set<Class<?>> supportTypeSet = new HashSet<>(Arrays.asList(String.class, Date.class));
 
@@ -511,11 +511,13 @@ public class MysqlBaseDAO implements BaseDAO {
     @Override
     public <T> void dropTableIfExist(Class<T> entity, String suffix) {
         String tableName = getTableName(entity) + suffix;
-        if (isExistTable(entity, suffix)) {
+
+        exec("drop table if exists " + tableName);
+/*        if (isExistTable(entity, suffix)) {
             exec("drop table " + tableName);
         } else {
             log.info("表{}不存在,无需执行删除语句", tableName);
-        }
+        }*/
 
     }
 

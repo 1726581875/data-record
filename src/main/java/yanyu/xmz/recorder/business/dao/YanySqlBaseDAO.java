@@ -4,11 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.util.ConnectUtil;
 import yanyu.xmz.recorder.business.dao.util.ConnectionManagerUtil;
+import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
 import yanyu.xmz.recorder.business.entity.yanysql.TEventRecord;
 
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -21,12 +24,20 @@ public class YanySqlBaseDAO extends MysqlBaseDAO {
 
     private static final Logger log = LoggerFactory.getLogger(YanySqlBaseDAO.class);
 
+/*    private ConnectUtil.Config yanyDbConfig =
+            new ConnectUtil.Config("159.75.134.161:8888:record", null, null, "com.moyu.test.jdbc.Driver");*/
+
     private ConnectUtil.Config yanyDbConfig =
-            new ConnectUtil.Config("localhost:8888:record", null, null, "com.moyu.test.jdbc.Driver");
+            new ConnectUtil.Config(PropertiesReaderUtil.get("yanysql.record.url"), null, null, "com.moyu.test.jdbc.Driver");
 
 
     public YanySqlBaseDAO() {
-        config = yanyDbConfig;
+        this.config = yanyDbConfig;
+    }
+
+    public YanySqlBaseDAO(String url) {
+        ConnectUtil.Config config = new ConnectUtil.Config(url, null, null, "com.moyu.test.jdbc.Driver");
+        this.config = config;
     }
 
 
@@ -46,14 +57,18 @@ public class YanySqlBaseDAO extends MysqlBaseDAO {
         YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO();
 /*        yanySqlBaseDAO.exec("create table test (id int, name char)");
         yanySqlBaseDAO.exec("insert into test (id, name) value(1,'肖明章')");*/
-        yanySqlBaseDAO.exec("drop table if exists t_event_record");
+/*        yanySqlBaseDAO.exec("drop table if exists t_event_record");
         yanySqlBaseDAO.createTable(TEventRecord.class);
 
         TEventRecord record = new TEventRecord();
         record.setId(UUID.randomUUID().toString());
         record.setCreateTime(new Date());
-        yanySqlBaseDAO.insert(record);
-
+        yanySqlBaseDAO.insert(record);*/
+        List<List> list = yanySqlBaseDAO.getList("select * from t_event_record limit 10", List.class);
+        list.forEach(row -> {
+            row.forEach(e -> System.out.print(e + ","));
+            System.out.println();
+        });
 
     }
 

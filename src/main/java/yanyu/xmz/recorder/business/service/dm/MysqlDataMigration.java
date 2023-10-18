@@ -3,6 +3,12 @@ package yanyu.xmz.recorder.business.service.dm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
+import yanyu.xmz.recorder.business.dao.YanySqlBaseDAO;
+import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +23,8 @@ public class MysqlDataMigration {
     private BaseDAO sourceBaseDAO;
 
     private BaseDAO targetBaseDAO;
+
+    private YanySqlBaseDAO bakYanyDatabaseDAO = new YanySqlBaseDAO(PropertiesReaderUtil.get("yanysql.data_bak.url"));
 
     public MysqlDataMigration(BaseDAO sourceBaseDAO, BaseDAO targetBaseDAO) {
         this.sourceBaseDAO = sourceBaseDAO;
@@ -42,20 +50,32 @@ public class MysqlDataMigration {
 
 
     public void syncTable(String tableName, String suffix) {
-        syncTableMetadata(tableName, suffix);
-        syncTableData(tableName, suffix);
+        String bakTableName = syncTableMetadata(tableName, suffix);
+        syncTableData(tableName, suffix, bakTableName);
     }
 
 
-    private void syncTableMetadata(String tableName, String suffix) {
+    private String syncTableMetadata(String tableName, String suffix) {
         // 获取远程mysql建表语句
         Map<String, Object> resultMap = sourceBaseDAO.getOne("show create table " + tableName, Map.class);
 
         // 本地若存在该表则先删除
-        targetBaseDAO.exec("DROP TABLE IF EXISTS `" + tableName + "`");
+        targetBaseDAO.exec("DROP TABLE IF EXISTS `" + tableName + suffix + "`");
         // 本地新建该表
         String createTableSql = String.valueOf(resultMap.get("Create Table")).replaceFirst(tableName, tableName + suffix);
         targetBaseDAO.exec(createTableSql);
+
+        // 在个人数据库创建备份表
+        String bakTableName = null;
+        try {
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+            bakTableName = tableName + suffix + dateFormat.format(new Date());
+            String bakTableSql = String.valueOf(resultMap.get("Create Table")).replaceFirst(tableName, bakTableName);
+            bakYanyDatabaseDAO.exec(bakTableSql);
+        } catch (Exception e) {
+            log.error("创建yany数据库备份表发生异常", e);
+        }
+        return bakTableName;
     }
 
 
@@ -67,7 +87,7 @@ public class MysqlDataMigration {
      * @param tableName
      * @param suffix
      */
-    private void syncTableData(String tableName, String suffix) {
+    private void syncTableData(String tableName, String suffix, String bakTableName) {
 
         Long batchMaxNum = 10000L;
 
@@ -86,6 +106,15 @@ public class MysqlDataMigration {
             // 数据入库本地数据库
             if (resultMapList != null && resultMapList.size() > 0) {
                 targetBaseDAO.batchInsert(tableName + suffix, resultMapList);
+            }
+
+            // 插入到个人数据库
+            if (bakTableName != null) {
+                try {
+                    bakYanyDatabaseDAO.batchInsert(bakTableName, resultMapList);
+                } catch (Exception e) {
+                    log.error("插入个人数据库发送异常,tableName={}", bakTableName, e);
+                }
             }
 
             log.info("{}表,第{}页数据 size={},批次结束,耗时={}s", tableName, i,resultMapList == null ? 0 : resultMapList.size()

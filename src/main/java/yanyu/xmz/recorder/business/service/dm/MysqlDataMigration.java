@@ -49,9 +49,10 @@ public class MysqlDataMigration {
     }
 
 
-    public void syncTable(String tableName, String suffix) {
+    public Long syncTable(String tableName, String suffix) {
         String bakTableName = syncTableMetadata(tableName, suffix);
-        syncTableData(tableName, suffix, bakTableName);
+        Long count = syncTableData(tableName, suffix, bakTableName);
+        return count;
     }
 
 
@@ -87,7 +88,7 @@ public class MysqlDataMigration {
      * @param tableName
      * @param suffix
      */
-    private void syncTableData(String tableName, String suffix, String bakTableName) {
+    private Long syncTableData(String tableName, String suffix, String bakTableName) {
 
         Long batchMaxNum = 10000L;
 
@@ -122,6 +123,8 @@ public class MysqlDataMigration {
         }
 
         log.info("{}表数据同步结束,数据量={},总耗时={}", tableName, count, (System.currentTimeMillis() - dataSyncStartTime) / 1000);
+
+        return count;
     }
 
 }

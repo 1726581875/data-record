@@ -131,7 +131,7 @@ public class DataMigrationServiceImpl implements DataMigrationService {
 
             // 执行同步程序，同步数据到临时表
             MysqlDataMigration mysqlDataMigration = new MysqlDataMigration(netBaseDAO, baseDAO);
-            mysqlDataMigration.syncTable(tableName, suffix + "_tmp");
+            Long syncCount = mysqlDataMigration.syncTable(tableName, suffix + "_tmp");
 
             // 删除旧表
             dropOldTableIfExists(targetTableName, tenantId, dataSourceId);
@@ -141,11 +141,18 @@ public class DataMigrationServiceImpl implements DataMigrationService {
             baseDAO.exec("ALTER TABLE `"+ temTableName  +"` RENAME TO `"  + targetTableName + "`");
 
             // 记录到租户关联表
+            SysTenantTable sysTable = baseDAO.getOne("select * from sys_tenant_table where table_name=? and tenant_id=? and data_source_id=?",
+                    SysTenantTable.class, targetTableName, tenantId, dataSourceId);
+            // 如果存在租户和该表关系，也需要先删除
+            if(sysTable != null){
+                baseDAO.deleteById(SysTenantTable.class, sysTable.getId());
+            }
             SysTenantTable tenantTable = new SysTenantTable();
             tenantTable.setDataSourceId(dataSourceId);
             tenantTable.setTenantId(tenantId);
             tenantTable.setTableName(tableName + suffix);
             tenantTable.setSourceTableName(tableName);
+            tenantTable.setRowNum(syncCount);
             sysTenantTableList.add(tenantTable);
 
             log.info("===== 表 {} 同步结束.. [end] 耗时={}s =====", tableName, (System.currentTimeMillis() - startTime) / 1000);
@@ -163,14 +170,7 @@ public class DataMigrationServiceImpl implements DataMigrationService {
     private void dropOldTableIfExists(String targetTableName, String tenantId, Long dataSourceId) {
         BaseDAO baseDAO = BaseDAO.mysqlInstance();
         // 本地如果存在该表，则先删除
-
         baseDAO.exec("DROP TABLE IF EXISTS `"+ targetTableName  +"`");
-        // 如果存在租户和该表关系，也需要先删除
-        SysTenantTable sysTable = baseDAO.getOne("select * from sys_tenant_table where table_name=? and tenant_id=? and data_source_id=?",
-                SysTenantTable.class, targetTableName, tenantId, dataSourceId);
-        if(sysTable != null){
-            baseDAO.deleteById(SysTenantTable.class, sysTable.getId());
-        }
     }
 
 

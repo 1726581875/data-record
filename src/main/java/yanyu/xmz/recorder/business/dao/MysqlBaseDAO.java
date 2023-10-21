@@ -132,12 +132,12 @@ public class MysqlBaseDAO implements BaseDAO {
                     String fieldName = NameConvertUtil.toDbRule(field.getName());
                     // 字段匹配，存在的列才获取结果并赋值,不存在的列则不做处理保持为null
                     if (tableColumnNameSet.contains(fieldName.toLowerCase())) {
-                        Object value = null;
-                        if(field.getType() == Long.class){
+                        Object value = resultSet.getObject(fieldName);
+/*                        if(field.getType() == Long.class){
                             value = resultSet.getLong(fieldName);
                         } else {
                              value = resultSet.getObject(fieldName);
-                        }
+                        }*/
                         if (Objects.nonNull(value)) {
                             field.setAccessible(true);
                             field.set(resultInstance, convertValue(field, value));

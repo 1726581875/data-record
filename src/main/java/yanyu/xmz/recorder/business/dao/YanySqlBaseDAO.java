@@ -5,14 +5,10 @@ import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.util.ConnectUtil;
 import yanyu.xmz.recorder.business.dao.util.ConnectionManagerUtil;
 import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
-import yanyu.xmz.recorder.business.entity.yanysql.TEventRecord;
+import yanyu.xmz.recorder.business.entity.yanysql.BakTable;
 
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 
 /**
@@ -54,21 +50,22 @@ public class YanySqlBaseDAO extends MysqlBaseDAO {
 
 
     public static void main(String[] args) {
-        YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO();
+        YanySqlBaseDAO yanySqlBaseDAO = new YanySqlBaseDAO("localhost:8888:data_bak");
 /*        yanySqlBaseDAO.exec("create table test (id int, name char)");
         yanySqlBaseDAO.exec("insert into test (id, name) value(1,'肖明章')");*/
 /*        yanySqlBaseDAO.exec("drop table if exists t_event_record");
-        yanySqlBaseDAO.createTable(TEventRecord.class);
+        yanySqlBaseDAO.createTable(AllBakTable.class);
 
         TEventRecord record = new TEventRecord();
         record.setId(UUID.randomUUID().toString());
         record.setCreateTime(new Date());
         yanySqlBaseDAO.insert(record);*/
-        List<List> list = yanySqlBaseDAO.getList("select * from t_event_record limit 10", List.class);
+/*        List<List> list = yanySqlBaseDAO.getList("select * from t_event_record limit 10", List.class);
         list.forEach(row -> {
             row.forEach(e -> System.out.print(e + ","));
             System.out.println();
-        });
+        });*/
+        yanySqlBaseDAO.createTable(BakTable.class);
 
     }
 

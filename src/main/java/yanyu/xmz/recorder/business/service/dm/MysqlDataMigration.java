@@ -5,12 +5,14 @@ import org.slf4j.LoggerFactory;
 import yanyu.xmz.recorder.business.dao.BaseDAO;
 import yanyu.xmz.recorder.business.dao.YanySqlBaseDAO;
 import yanyu.xmz.recorder.business.dao.util.PropertiesReaderUtil;
+import yanyu.xmz.recorder.business.entity.yanysql.BakTable;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author xiaomingzhang
@@ -60,19 +62,29 @@ public class MysqlDataMigration {
         // 获取远程mysql建表语句
         Map<String, Object> resultMap = sourceBaseDAO.getOne("show create table " + tableName, Map.class);
 
-        // 本地若存在该表则先删除
+        // 本地mysql若存在该表则先删除
         targetBaseDAO.exec("DROP TABLE IF EXISTS `" + tableName + suffix + "`");
-        // 本地新建该表
+        // 本地mysql新建该表
         String createTableSql = String.valueOf(resultMap.get("Create Table")).replaceFirst(tableName, tableName + suffix);
         targetBaseDAO.exec(createTableSql);
 
-        // 在个人数据库创建备份表
+        // 在个人数据库(yanysql)创建备份表
         String bakTableName = null;
         try {
+            // 创建表
             DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
             bakTableName = tableName + suffix + dateFormat.format(new Date());
             String bakTableSql = String.valueOf(resultMap.get("Create Table")).replaceFirst(tableName, bakTableName);
             bakYanyDatabaseDAO.exec(bakTableSql);
+
+            // 插入建表记录
+            BakTable bakTable = new BakTable();
+            bakTable.setId(UUID.randomUUID().toString().replace("-", ""));
+            bakTable.setCreateTime(new Date());
+            bakTable.setPath(suffix);
+            bakTable.setTableName(bakTableName);
+            bakTable.setCreateTableSql(bakTableSql);
+            bakYanyDatabaseDAO.insert(bakTable);
         } catch (Exception e) {
             log.error("创建yany数据库备份表发生异常", e);
         }

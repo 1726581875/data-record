@@ -21,7 +21,7 @@ public class BakTableServiceImpl implements BakTableService {
     @Override
     public List<BakTable> getBakTableList(String tenantId, String tableName) {
         String path = "_" + tenantId + "_";
-        String sql = "select * from bak_table where path like '" + path + "%' and table_name like '%" + tableName + "%' order by create_time desc";
+        String sql = "select * from bak_table where path like '%" + path + "%' and table_name like '%" + tableName + "%' order by create_time desc";
         List<BakTable> list = bakYanyDatabaseDAO.getList(sql, BakTable.class);
         return list;
     }

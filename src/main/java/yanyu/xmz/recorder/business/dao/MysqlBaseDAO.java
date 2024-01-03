@@ -13,6 +13,8 @@ import yanyu.xmz.recorder.business.dao.util.NameConvertUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -68,12 +70,18 @@ public class MysqlBaseDAO implements BaseDAO {
         try (Connection connection = ConnectionManagerUtil.getConnection(config);
              PreparedStatement prepareStatement = connection.prepareStatement(sql)) {
             log.info("待执行SQL=>{}",sql);
+
+            List<String> paramValueList = new ArrayList<>();
             if(params != null && params.length > 0) {
                 for (int i = 1; i <= params.length; i++) {
-                    log.info("参数{}=>{}",i, params[i-1]);
-                    prepareStatement.setObject(i, params[i-1]);
+                    Object value = params[i - 1];
+                    prepareStatement.setObject(i, value);
+                    paramValueList.add(objValueToString(value));
                 }
             }
+
+            log.info("参数:{}", paramValueList.stream().collect(Collectors.joining(",")));
+
             // 执行查询sql，获取查询结果
             ResultSet resultSet = prepareStatement.executeQuery();
             // 如果returnType类型是List，则返回结果的第一行为列名
@@ -299,17 +307,55 @@ public class MysqlBaseDAO implements BaseDAO {
     }
 
 
-    private void setUpdateByKeyParam(PreparedStatement statement, Object object, List<String> updateColumnList, String keyColumn) throws SQLException, IllegalAccessException {
+    private void setUpdateByKeyParam(PreparedStatement statement, Object object, List<String> paramColumnList, String keyColumn) throws SQLException, IllegalAccessException {
 
         if (object == null) {
             throw new IllegalArgumentException("object is null");
         }
 
-        updateColumnList.add(keyColumn);
-        Map<String, Integer> columnIndexMap = getColumnIndexMap(updateColumnList);
+        paramColumnList.add(keyColumn);
 
         Class<?> objectClass = object.getClass();
-        Field[] declaredFields = objectClass.getDeclaredFields();
+        Map<String, Field> fieldMap = getFieldMap(objectClass.getDeclaredFields());
+
+        List<String> valueList = new ArrayList<>();
+        for (int i = 0; i < paramColumnList.size(); i++) {
+            int idx = i + 1;
+            String paramColumnName = paramColumnList.get(i);
+            Field field = fieldMap.get(paramColumnName);
+            if (field != null) {
+                field.setAccessible(true);
+                Object value = field.get(object);
+                if (value != null) {
+                    statement.setObject(idx, value);
+                    valueList.add(objValueToString(value));
+                }
+            }
+        }
+        log.info("参数:{}", valueList.stream().collect(Collectors.joining(",")));
+    }
+
+    private String objValueToString(Object value) {
+
+        if (value == null) {
+            return "null";
+        }
+
+        if (value instanceof Date) {
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return dateFormat.format((Date) value);
+        }
+        return String.valueOf(value);
+    }
+
+
+
+    private Map<String, Field> getFieldMap(Field[] declaredFields) {
+        if (declaredFields == null || declaredFields.length == 0) {
+            throw new IllegalArgumentException("对象字段不能为空");
+        }
+
+        Map<String, Field> fieldMap = new HashMap<>();
         for (Field field : declaredFields) {
             boolean isStatic = Modifier.isStatic(field.getModifiers());
             if(isStatic) {
@@ -317,16 +363,9 @@ public class MysqlBaseDAO implements BaseDAO {
             }
 
             String fieldName = field.getName();
-            Integer index = columnIndexMap.get(NameConvertUtil.toDbRule(fieldName));
-            if (index != null) {
-                field.setAccessible(true);
-                Object value = field.get(object);
-                if (value != null) {
-                    log.info("参数{} ==> [{}]",index, value);
-                    statement.setObject(index, value);
-                }
-            }
+            fieldMap.put(NameConvertUtil.toDbRule(fieldName), field);
         }
+        return fieldMap;
     }
 
 
@@ -341,52 +380,36 @@ public class MysqlBaseDAO implements BaseDAO {
         if (object == null) {
             throw new IllegalArgumentException("object is null");
         }
-
-        Map<String, Integer> columnIndexMap = getColumnIndexMap(columnList);
+        List<String> valueList = new ArrayList<>();
 
         if (object instanceof Map) {
             Map<String,Object> rowMap = (Map<String, Object>) object;
-            for (Map.Entry<String, Object> rowEntry : rowMap.entrySet()){
-                Integer columnIndex = columnIndexMap.get(rowEntry.getKey());
-                if(columnIndex != null) {
-                    log.debug("参数{} ==> [{}]", columnIndex, rowEntry.getValue());
-                    statement.setObject(columnIndex, rowEntry.getValue());
-                }
+            for (int i = 0; i < columnList.size(); i++) {
+                int idx = i + 1;
+                String paramColumnName = columnList.get(i);
+                Object value = rowMap.get(paramColumnName);
+                statement.setObject(idx, value);
+                valueList.add(objValueToString(value));
             }
         } else {
             Class<?> objectClass = object.getClass();
-            Field[] declaredFields = objectClass.getDeclaredFields();
-            for (Field field : declaredFields) {
-                boolean isStatic = Modifier.isStatic(field.getModifiers());
-                if(isStatic) {
-                    continue;
-                }
-                String columnName = NameConvertUtil.toDbRule(field.getName());
-                Integer columnIndex = columnIndexMap.get(columnName);
-                if (columnIndex != null) {
+            Map<String, Field> fieldMap = getFieldMap(objectClass.getDeclaredFields());
+            for (int i = 0; i < columnList.size(); i++) {
+                int idx = i + 1;
+                String paramColumnName = columnList.get(i);
+                Field field = fieldMap.get(paramColumnName);
+                if (field != null) {
                     field.setAccessible(true);
                     Object value = field.get(object);
                     if (value != null) {
-                        log.debug("参数{} ==> [{}]", columnIndex, value);
-                        statement.setObject(columnIndex, value);
+                        statement.setObject(idx, value);
+                        valueList.add(objValueToString(value));
                     }
                 }
             }
         }
+        log.info("参数:{}", valueList.stream().collect(Collectors.joining(",")));
     }
-
-    private  Map<String, Integer> getColumnIndexMap(List<String> columnList){
-        if (columnList == null || columnList.size() == 0) {
-            throw new IllegalArgumentException("columnList is null");
-        }
-
-        Map<String, Integer> columnIndexMap = new HashMap<>();
-        for (int i = 0; i < columnList.size(); i++) {
-            columnIndexMap.put(columnList.get(i), i + 1);
-        }
-        return columnIndexMap;
-    }
-
 
     @Override
     public <T> int batchInsert(List<T> objectList) {
